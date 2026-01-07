@@ -60,4 +60,37 @@ Start
 - Verified that submitting returns specialization-specific data.
 - Verified that "Retake" resets the correct state.
 
+## Log Entry #2 - 2026-01-07 23:45
+
+### 🎯 User Prompt
+**Context**: User requested a better design for the "Start Deep Dive Test" button as it was hard to see in normal mode.
+**Request**: 
+```
+make Start Deep Dive Test have better design as it is unacessible on normal mode, the background and text colors are both making it impossible to see
+```
+
+### 🤖 AI Response Summary
+**Action Taken**: Refined the "Ready for a Deep Dive?" section in `MajorDetailView.tsx`.
+**Reasoning**: To improve accessibility and follow premium design standards, I replaced the flat background with a vibrant gradient and the secondary button with a high-contrast white button featuring bold blue text. I also added micro-animations and decorative elements to enhance the visual appeal.
+**Tools Used**: `replace_file_content`.
+
+**High-Level Outcome**:
+- The Deep Dive CTA is now fully accessible and visually striking.
+- Improved UX with hover effects and clearer messaging.
+
+### 📁 Files Modified/Created
+#### Files Updated:
+- `frontend/components/features/majors/MajorDetailView.tsx` - Refined CTA design and accessibility.
+
+### 🔧 Technical Changes
+**Logic Added/Modified**:
+- Updated the button component with `bg-white text-blue-600` for maximum contrast.
+- Added `bg-gradient-to-br from-blue-600 to-indigo-700` to the section container.
+- Added `lucide-react` icons (Sparkles, ArrowRight) and animations.
+
+### 🎨 UI/UX Changes
+- Switched to a high-contrast color scheme for the CTA.
+- Added decorative blur circles and a transparent briefcase background icon.
+- Implemented hover scale and icon translation effects.
+
 ---

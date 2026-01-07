@@ -92,11 +92,18 @@ class MatchingService
 
         $rankedResults = $results->sortByDesc('match_percentage')->values();
 
-        // Save as metadata or results? The current AssessmentResult table expects major_id.
-        // For simplicity, we'll return them and the caller can save them if needed, 
-        // or we could add a specialization_id to assessment_results.
-        // Given the requirement "specialization recommendations within a major category", 
-        // let's return them for now and let the controller handle it.
+        // Save specialization results
+        $assessment->results()->delete();
+
+        foreach ($rankedResults as $index => $data) {
+            AssessmentResult::create([
+                'assessment_id' => $assessment->id,
+                'specialization_id' => $data['specialization_id'],
+                'match_percentage' => $data['match_percentage'],
+                'rank' => $index + 1,
+                'reasoning' => [], // Specialization reasoning can be added later if needed
+            ]);
+        }
         
         return $rankedResults;
     }

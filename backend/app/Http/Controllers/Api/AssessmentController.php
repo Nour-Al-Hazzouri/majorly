@@ -142,4 +142,41 @@ class AssessmentController extends Controller
             'recommendations' => $recommendations
         ]);
     }
+
+    /**
+     * Display the specified assessment.
+     *
+     * @param  \App\Models\Assessment  $assessment
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function show(Assessment $assessment)
+    {
+        if ($assessment->user_id && $assessment->user_id !== Auth::guard('sanctum')->id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        // Lazy generate results if missing for completed assessments
+        if ($assessment->status === 'completed' && $assessment->results()->count() === 0) {
+            if ($assessment->type === 'deep_dive') {
+                $majorId = $assessment->metadata['major_id'] ?? null;
+                if ($majorId) {
+                    $major = Major::find($majorId);
+                    if ($major) {
+                        $this->matchingService->generateSpecializationRecommendations($assessment, $major);
+                    }
+                }
+            } else {
+                $this->matchingService->generateRecommendations($assessment);
+            }
+        }
+
+        $assessment->load([
+            'results.major',
+            'results.specialization.occupations'
+        ]);
+
+        return response()->json([
+            'assessment' => $assessment
+        ]);
+    }
 }

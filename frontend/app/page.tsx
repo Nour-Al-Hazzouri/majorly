@@ -78,7 +78,7 @@ export default function Home() {
                 size="lg"
                 className="rounded-full bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:opacity-90 transition-all text-lg px-8 py-7 shadow-xl shadow-[#4F46E5]/25"
               >
-                <Link href="/register">
+                <Link href="/assessment">
                   Start Free Assessment
                   <ArrowRight className="ml-2 w-5 h-5" />
                 </Link>

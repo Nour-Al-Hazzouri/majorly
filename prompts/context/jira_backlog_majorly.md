@@ -573,6 +573,7 @@ Major Recommendation Platform (MRP) - A web-based platform to help students choo
   - **Points**: 1
 
 ---
+---
 
 ## EPIC 5: Matching Algorithm & Results
 **Epic Description**: Implement the core matching algorithm that calculates major recommendations based on assessment responses, and display personalized results.

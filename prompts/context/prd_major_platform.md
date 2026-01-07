@@ -242,6 +242,8 @@ Assessment Flow
 ├── Progress bar persistent throughout
 └── Submit → Results
 
+**Note**: Assessment structure and questions are dynamically served from the backend `QuestionService`.
+
 Results Dashboard
 ├── Header: User profile dropdown, navigation
 ├── Top Recommendations (cards with match %)
@@ -408,9 +410,11 @@ MAIL_FROM_ADDRESS=
 
 **Lightcast Open Skills API**
 - **Purpose**: Skills catalog (33,000+ skills)
-- **Authentication**: API Key (free tier)
-- **Usage**: One-time or monthly batch import into local database
-- **Rate Limits**: 50 API calls/year (free tier) - mitigate by caching locally
+- **Status**: **[IMPLEMENTED]** (Sync command and Service Layer with OAuth2 support)
+- **Authentication**: OAuth2 Client Credentials (via `LIGHTCAST_CLIENT_ID` and `LIGHTCAST_CLIENT_SECRET`)
+- **Usage**: Synced to local database via `majorly:fetch-skills` command.
+- **Fallback**: Includes robust mock dataset for development and testing without API keys.
+- **Rate Limits**: Mitigated by local caching and batch syncing.
 
 **O*NET Web Services API**
 - **Purpose**: Occupation data (900+ occupations), salary, job outlook, education requirements

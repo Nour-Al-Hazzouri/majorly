@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PasswordResetController;
+use App\Http\Controllers\Api\SkillController;
+use App\Http\Controllers\Api\AssessmentController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -12,10 +14,21 @@ Route::post('/logout', [AuthController::class, 'logout']);
 Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink']);
 Route::post('/reset-password', [PasswordResetController::class, 'reset']);
 
+// Skills Search
+Route::get('/skills', [SkillController::class, 'index']);
+
+// Assessment Flow (Public/Guest access supported in controller)
+Route::get('/assessments/questions', [AssessmentController::class, 'questions']);
+Route::post('/assessments', [AssessmentController::class, 'store']);
+Route::patch('/assessments/{assessment}', [AssessmentController::class, 'update']);
+Route::post('/assessments/{assessment}/submit', [AssessmentController::class, 'submit']);
+
 // Protected Routes
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
+
+    Route::get('/assessments', [AssessmentController::class, 'index']);
 });
 

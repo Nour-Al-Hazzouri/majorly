@@ -9,6 +9,7 @@ import { Loader2, AlertCircle, ChevronLeft, Briefcase } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { useRouter } from 'next/navigation';
 
 interface MajorDetailViewProps {
     slug: string;
@@ -18,6 +19,7 @@ export const MajorDetailView: React.FC<MajorDetailViewProps> = ({ slug }) => {
     const [major, setMajor] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const router = useRouter();
 
     useEffect(() => {
         const fetchMajor = async () => {
@@ -107,7 +109,12 @@ export const MajorDetailView: React.FC<MajorDetailViewProps> = ({ slug }) => {
                         <p className="text-blue-50 opacity-90 mb-6 text-lg">
                             Take a specialized assessment to find the perfect specialization and see how well your unique skills match this major.
                         </p>
-                        <Button size="lg" variant="secondary" className="font-semibold text-blue-700 hover:bg-white transition-all">
+                        <Button
+                            size="lg"
+                            variant="secondary"
+                            className="font-semibold text-blue-700 hover:bg-white transition-all"
+                            onClick={() => router.push(`/assessment/deep-dive/${major.id}`)}
+                        >
                             Start Deep Dive Test
                         </Button>
                     </div>

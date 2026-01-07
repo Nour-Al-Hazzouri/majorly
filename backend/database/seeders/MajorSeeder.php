@@ -130,6 +130,25 @@ class MajorSeeder extends Seeder
                     'technical_aptitude' => 4,
                     'creative_problem_solving' => 3
                 ]
+            ],
+            [
+                'name' => 'Engineering',
+                'slug' => 'engineering',
+                'category' => 'Engineering',
+                'description' => 'The branch of science and technology concerned with the design, building, and use of engines, machines, and structures.',
+                'skills' => ['Mathematics', 'Physics', 'Engineering Design', 'Problem Solving'],
+                'occupations' => ['17-2141.00', '17-2071.00'],
+                'ideal_interests' => [
+                    'technical_work' => 5,
+                    'mathematical_puzzles' => 5,
+                    'scientific_research' => 4
+                ],
+                'ideal_strengths' => [
+                    'analytical_thinking' => 5,
+                    'technical_aptitude' => 5,
+                    'creative_problem_solving' => 4,
+                    'detail_orientation' => 4
+                ]
             ]
         ];
 

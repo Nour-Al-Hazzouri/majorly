@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Assessment;
 use App\Models\AssessmentResponse;
+use App\Models\Major;
 use App\Services\QuestionService;
 use App\Services\MatchingService;
 use Illuminate\Http\Request;
@@ -33,12 +34,23 @@ class AssessmentController extends Controller
     }
 
     /**
-     * Get the Tier 1 assessment questions.
+     * Get the assessment questions.
      *
+     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function questions()
+    public function questions(Request $request)
     {
+        $majorId = $request->query('major_id');
+
+        if ($majorId) {
+            $major = Major::find($majorId);
+            if (!$major) {
+                return response()->json(['message' => 'Major not found'], 404);
+            }
+            return response()->json($this->questionService->getDeepDiveQuestions($major));
+        }
+
         return response()->json($this->questionService->getTier1Questions());
     }
 
@@ -101,6 +113,26 @@ class AssessmentController extends Controller
         }
 
         $assessment->update(['status' => 'completed']);
+
+        if ($assessment->type === 'deep_dive') {
+            $majorId = $assessment->metadata['major_id'] ?? null;
+            if (!$majorId) {
+                return response()->json(['message' => 'Major ID missing in assessment metadata'], 400);
+            }
+            
+            $major = Major::find($majorId);
+            if (!$major) {
+                return response()->json(['message' => 'Major not found'], 404);
+            }
+
+            $recommendations = $this->matchingService->generateSpecializationRecommendations($assessment, $major);
+            
+            return response()->json([
+                'message' => 'Deep dive assessment submitted successfully.',
+                'assessment' => $assessment,
+                'recommendations' => $recommendations
+            ]);
+        }
 
         $recommendations = $this->matchingService->generateRecommendations($assessment);
         

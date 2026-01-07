@@ -1,55 +1,18 @@
 'use client';
 
 import { useAuth } from "@/components/providers/AuthProvider";
-import { Button } from "@/components/ui/button";
-import { LayoutDashboard, LogOut, BookOpen, Sparkles } from "lucide-react";
+import { Sidebar } from "@/components/layout/Sidebar";
+import { BookOpen } from "lucide-react";
 import { motion } from "motion/react";
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 export default function DashboardPage() {
-    const { user, logout } = useAuth();
+    const { user } = useAuth();
 
     return (
         <div className="min-h-screen bg-[#F8FAFC]">
-            {/* Sidebar */}
-            <aside className="fixed left-0 top-0 h-full w-64 bg-white border-r border-slate-200 p-6 hidden md:flex flex-col">
-                <div className="flex items-center gap-2 mb-10">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#4F46E5] to-[#7C3AED]" />
-                    <span className="text-xl font-bold text-slate-900">Majorly</span>
-                </div>
-
-                <nav className="space-y-2 flex-grow">
-                    <Button asChild variant="ghost" className="w-full justify-start gap-3 bg-indigo-50 text-indigo-700">
-                        <Link href="/dashboard">
-                            <LayoutDashboard className="w-5 h-5" />
-                            Dashboard
-                        </Link>
-                    </Button>
-                    <Button asChild variant="ghost" className="w-full justify-start gap-3 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">
-                        <Link href="/majors">
-                            <BookOpen className="w-5 h-5" />
-                            Browse Majors
-                        </Link>
-                    </Button>
-                    <Button asChild variant="ghost" className="w-full justify-start gap-3 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">
-                        <Link href="/assessment">
-                            <Sparkles className="w-5 h-5 text-indigo-500" />
-                            Quick Assessment
-                        </Link>
-                    </Button>
-                </nav>
-
-                <div className="mt-auto pt-6 border-t border-slate-100">
-                    <Button
-                        variant="ghost"
-                        onClick={() => logout()}
-                        className="w-full justify-start gap-3 text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors"
-                    >
-                        <LogOut className="w-5 h-5" />
-                        Log Out
-                    </Button>
-                </div>
-            </aside>
+            <Sidebar />
 
             {/* Main Content */}
             <main className="md:ml-64 p-8">

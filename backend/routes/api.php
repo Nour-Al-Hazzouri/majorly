@@ -34,6 +34,11 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     Route::get('/assessments', [AssessmentController::class, 'index']);
+    Route::get('/assessments/{assessment}', [AssessmentController::class, 'show']);
+    
+    // User Profile Routes
+    Route::get('/profile', [\App\Http\Controllers\Api\UserController::class, 'show']);
+    Route::patch('/profile', [\App\Http\Controllers\Api\UserController::class, 'update']);
     
     // Major Interaction Routes
     Route::post('/majors/{major}/favorite', [\App\Http\Controllers\Api\MajorController::class, 'toggleFavorite']);

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Assessment;
 use App\Models\AssessmentResult;
 use App\Models\Major;
+use App\Models\Specialization;
 use Illuminate\Support\Collection;
 
 class MatchingService
@@ -56,6 +57,47 @@ class MatchingService
             ]);
         }
 
+        return $rankedResults;
+    }
+
+    /**
+     * Calculate and save specialization recommendations for a deep dive assessment.
+     *
+     * @param Assessment $assessment
+     * @param Major $major
+     * @return Collection
+     */
+    public function generateSpecializationRecommendations(Assessment $assessment, Major $major): Collection
+    {
+        $responses = $assessment->responses()->pluck('response_value', 'question_id');
+        $specializations = $major->specializations()->with('occupations')->get();
+
+        $results = $specializations->map(function (Specialization $specialization) use ($responses) {
+            $interestScore = $this->calculateRatingScore($specialization->ideal_interests ?? [], $responses['interests'] ?? []);
+            $strengthScore = $this->calculateRatingScore($specialization->ideal_strengths ?? [], $responses['strengths_weaknesses'] ?? []);
+
+            // Weighting for specialization: 60% Interests, 40% Strengths (Skills are already broad for the major)
+            $matchPercentage = ($interestScore * 0.6) + ($strengthScore * 0.4);
+
+            return [
+                'specialization_id' => $specialization->id,
+                'specialization' => $specialization,
+                'match_percentage' => round($matchPercentage, 2),
+                'scores' => [
+                    'interests' => $interestScore,
+                    'strengths' => $strengthScore,
+                ]
+            ];
+        });
+
+        $rankedResults = $results->sortByDesc('match_percentage')->values();
+
+        // Save as metadata or results? The current AssessmentResult table expects major_id.
+        // For simplicity, we'll return them and the caller can save them if needed, 
+        // or we could add a specialization_id to assessment_results.
+        // Given the requirement "specialization recommendations within a major category", 
+        // let's return them for now and let the controller handle it.
+        
         return $rankedResults;
     }
 

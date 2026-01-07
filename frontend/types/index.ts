@@ -7,10 +7,21 @@ export interface Skill {
 export interface Occupation {
     id: number;
     code: string;
-    title: string;
+    name: string;
     description?: string;
     median_salary?: string;
-    outlook?: string;
+    job_outlook?: string;
+}
+
+export interface Specialization {
+    id: number;
+    major_id: number;
+    name: string;
+    slug: string;
+    description: string;
+    ideal_interests: Record<string, number>;
+    ideal_strengths: Record<string, number>;
+    occupations?: Occupation[];
 }
 
 export interface Major {
@@ -33,12 +44,25 @@ export interface AssessmentResult {
     reasoning: string[];
 }
 
+export interface SpecializationResult {
+    specialization_id: number;
+    specialization: Specialization;
+    match_percentage: number;
+    scores: {
+        interests: number;
+        strengths: number;
+    };
+}
+
 export interface Assessment {
     id: number;
     user_id: number | null;
     type: 'tier1' | 'deep_dive';
     status: 'started' | 'completed';
-    metadata: any;
+    metadata: {
+        major_id?: number;
+        [key: string]: any;
+    };
     results?: AssessmentResult[];
     created_at: string;
 }

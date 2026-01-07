@@ -1,13 +1,13 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Question, AssessmentSection, AssessmentResult } from '@/types';
+import { Question, AssessmentSection, AssessmentResult, SpecializationResult } from '@/types';
 
 interface AssessmentState {
     assessmentId: number | null;
     currentStep: number;
     sections: AssessmentSection[];
     responses: Record<string, any>;
-    results: AssessmentResult[] | null;
+    results: (AssessmentResult[] | SpecializationResult[]) | null;
     isSubmitting: boolean;
     userId: number | null;
 
@@ -16,7 +16,7 @@ interface AssessmentState {
     setUserId: (id: number | null) => void;
     setSections: (sections: AssessmentSection[]) => void;
     setResponse: (questionId: string, value: any) => void;
-    setResults: (results: AssessmentResult[] | null) => void;
+    setResults: (results: (AssessmentResult[] | SpecializationResult[]) | null) => void;
     nextStep: () => void;
     prevStep: () => void;
     setStep: (step: number) => void;

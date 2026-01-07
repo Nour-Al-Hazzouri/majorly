@@ -5,10 +5,11 @@ import { getMajorBySlug } from '@/lib/api';
 import { MajorHeader } from './MajorHeader';
 import { SkillsList } from './SkillsList';
 import { CareerPaths } from './CareerPaths';
-import { Loader2, AlertCircle, ChevronLeft, Briefcase } from 'lucide-react';
+import { Loader2, AlertCircle, ChevronLeft, Briefcase, Sparkles, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { useRouter } from 'next/navigation';
 
 interface MajorDetailViewProps {
     slug: string;
@@ -18,6 +19,7 @@ export const MajorDetailView: React.FC<MajorDetailViewProps> = ({ slug }) => {
     const [major, setMajor] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const router = useRouter();
 
     useEffect(() => {
         const fetchMajor = async () => {
@@ -101,20 +103,34 @@ export const MajorDetailView: React.FC<MajorDetailViewProps> = ({ slug }) => {
                     <CareerPaths occupations={major.occupations} />
                 </section>
 
-                <section className="bg-blue-600 rounded-2xl p-8 text-white mt-8 overflow-hidden relative shadow-xl shadow-blue-200">
+                <section className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-3xl p-8 md:p-12 text-white mt-12 overflow-hidden relative shadow-2xl shadow-blue-200/50 border border-white/10">
                     <div className="relative z-10 max-w-2xl">
-                        <h3 className="text-3xl font-bold mb-4">Ready for a Deep Dive?</h3>
-                        <p className="text-blue-50 opacity-90 mb-6 text-lg">
-                            Take a specialized assessment to find the perfect specialization and see how well your unique skills match this major.
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-blue-50 text-xs font-bold uppercase tracking-wider mb-6">
+                            <Sparkles className="w-3.5 h-3.5" />
+                            Premium Feature
+                        </div>
+                        <h3 className="text-3xl md:text-4xl font-black mb-4 tracking-tight">
+                            Ready for a Deep Dive?
+                        </h3>
+                        <p className="text-blue-50/90 mb-8 text-lg leading-relaxed">
+                            Find your perfect specialization within {major.name}. Our data-driven deep dive test matches your unique interests to specialized career paths.
                         </p>
-                        <Button size="lg" variant="secondary" className="font-semibold text-blue-700 hover:bg-white transition-all">
-                            Start Deep Dive Test
+                        <Button
+                            size="lg"
+                            className="bg-white text-blue-600 hover:bg-blue-50 font-bold text-lg px-8 h-14 rounded-2xl shadow-lg transition-all duration-300 hover:scale-105 active:scale-95 group"
+                            onClick={() => router.push(`/assessment/deep-dive/${major.id}`)}
+                        >
+                            Start Deep Dive Assessment
+                            <ArrowRight className="ml-2 w-5 h-5 transition-transform group-hover:translate-x-1" />
                         </Button>
                     </div>
-                    {/* Decorative background element */}
-                    <div className="absolute top-0 right-0 -mr-12 -mt-12 w-64 h-64 bg-blue-500 rounded-full opacity-20 blur-3xl"></div>
-                    <div className="absolute bottom-0 right-0 mb-4 mr-4 hidden md:block opacity-20 transform rotate-12">
-                        <Briefcase size={120} />
+
+                    {/* Decorative Elements */}
+                    <div className="absolute top-0 right-0 -mr-16 -mt-16 w-80 h-80 bg-white/10 rounded-full blur-3xl"></div>
+                    <div className="absolute bottom-0 left-0 -ml-16 -mb-16 w-64 h-64 bg-blue-400/20 rounded-full blur-3xl"></div>
+
+                    <div className="absolute top-1/2 right-12 -translate-y-1/2 hidden lg:block opacity-10 transform hover:scale-110 transition-transform duration-700">
+                        <Briefcase size={240} className="rotate-12" />
                     </div>
                 </section>
             </div>

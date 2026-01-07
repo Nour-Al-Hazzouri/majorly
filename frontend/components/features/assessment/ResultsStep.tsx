@@ -11,8 +11,10 @@ import {
     ChevronUp,
     Sparkles,
     BookOpen,
-    Target
+    Target,
+    ArrowUpRight
 } from 'lucide-react';
+import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Major, AssessmentResult } from '@/types';
 import api from '@/lib/api';
@@ -183,9 +185,17 @@ function MajorResultCard({ result, index }: { result: AssessmentResult; index: n
                                     </div>
 
                                     <div className="flex flex-wrap gap-3 pt-2">
-                                        <Button className="rounded-xl bg-[#4F46E5] hover:bg-[#4338CA] text-white shadow-lg shadow-[#4F46E5]/20 gap-2">
-                                            Explore Major Details
-                                            <ArrowRight className="w-4 h-4" />
+                                        <Button asChild className="rounded-xl bg-[#4F46E5] hover:bg-[#4338CA] text-white shadow-lg shadow-[#4F46E5]/20 gap-2">
+                                            <Link href={`/majors/${result.major.slug}`}>
+                                                Explore Major Details
+                                                <ArrowRight className="w-4 h-4" />
+                                            </Link>
+                                        </Button>
+                                        <Button asChild variant="outline" className="rounded-xl border-[#4F46E5] text-[#4F46E5] hover:bg-[#4F46E5]/5 gap-2">
+                                            <Link href={`/assessment/deep-dive/${result.major.id}`}>
+                                                Take Deep Dive
+                                                <ArrowUpRight className="w-4 h-4" />
+                                            </Link>
                                         </Button>
                                         <Button variant="ghost" className="rounded-xl text-[#64748b] hover:bg-white/60 gap-2">
                                             <BookOpen className="w-4 h-4" />

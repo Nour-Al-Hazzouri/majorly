@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useAssessmentStore, AssessmentSection } from '@/store/slices/assessmentStore';
+import { useAssessmentStore } from '@/store/slices/assessmentStore';
+import { AssessmentSection, Skill } from '@/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,11 +15,6 @@ interface SkillsStepProps {
     section: AssessmentSection;
     onNext: () => void;
     onBack: () => void;
-}
-
-interface Skill {
-    id: number;
-    name: string;
 }
 
 const SkillsStep = ({ section, onNext, onBack }: SkillsStepProps) => {

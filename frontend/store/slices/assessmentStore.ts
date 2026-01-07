@@ -1,26 +1,13 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-
-export interface Question {
-    id: string;
-    text: string;
-}
-
-export interface AssessmentSection {
-    id: string;
-    title: string;
-    description: string;
-    type: 'skills_search' | 'rating_scale';
-    required: boolean;
-    min_selections?: number;
-    questions?: Question[];
-}
+import { Question, AssessmentSection, AssessmentResult } from '@/types';
 
 interface AssessmentState {
     assessmentId: number | null;
     currentStep: number;
     sections: AssessmentSection[];
     responses: Record<string, any>;
+    results: AssessmentResult[] | null;
     isSubmitting: boolean;
     userId: number | null;
 
@@ -29,6 +16,7 @@ interface AssessmentState {
     setUserId: (id: number | null) => void;
     setSections: (sections: AssessmentSection[]) => void;
     setResponse: (questionId: string, value: any) => void;
+    setResults: (results: AssessmentResult[] | null) => void;
     nextStep: () => void;
     prevStep: () => void;
     setStep: (step: number) => void;
@@ -43,6 +31,7 @@ export const useAssessmentStore = create<AssessmentState>()(
             currentStep: 0,
             sections: [],
             responses: {},
+            results: null,
             isSubmitting: false,
             userId: null,
 
@@ -53,6 +42,7 @@ export const useAssessmentStore = create<AssessmentState>()(
                 set((state) => ({
                     responses: { ...state.responses, [questionId]: value }
                 })),
+            setResults: (results) => set({ results }),
             nextStep: () => set((state) => ({ currentStep: state.currentStep + 1 })),
             prevStep: () => set((state) => ({ currentStep: Math.max(0, state.currentStep - 1) })),
             setStep: (step) => set({ currentStep: step }),
@@ -61,6 +51,7 @@ export const useAssessmentStore = create<AssessmentState>()(
                 assessmentId: null,
                 currentStep: 0,
                 responses: {},
+                results: null,
                 isSubmitting: false,
                 userId: null
             }),
@@ -71,6 +62,7 @@ export const useAssessmentStore = create<AssessmentState>()(
                 assessmentId: state.assessmentId,
                 responses: state.responses,
                 currentStep: state.currentStep,
+                results: state.results,
                 userId: state.userId
             }),
         }

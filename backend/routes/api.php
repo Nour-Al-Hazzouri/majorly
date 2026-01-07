@@ -30,5 +30,9 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     Route::get('/assessments', [AssessmentController::class, 'index']);
+    
+    // Major Interaction Routes
+    Route::post('/majors/{major}/favorite', [\App\Http\Controllers\Api\MajorController::class, 'toggleFavorite']);
+    Route::get('/majors/favorites', [\App\Http\Controllers\Api\MajorController::class, 'favorites']);
 });
 

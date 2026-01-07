@@ -59,17 +59,14 @@ class MatchingService
         return $rankedResults;
     }
 
-    /**
-     * Calculate skill match score using Jaccard-like similarity.
-     *
-     * @param Major $major
-     * @param Collection $responses
-     * @return float (0-100)
-     */
     private function calculateSkillScore(Major $major, Collection $responses): float
     {
-        $userSkills = collect($responses['skills_current'] ?? [])
-            ->merge($responses['skills_aspiration'] ?? [])
+        $userSkillsCurrent = collect($responses['skills_current'] ?? []);
+        $userSkillsAspiration = collect($responses['skills_aspiration'] ?? []);
+
+        // Ensure we only have IDs even if the frontend sends objects
+        $userSkills = $userSkillsCurrent->merge($userSkillsAspiration)
+            ->map(fn($skill) => is_array($skill) ? ($skill['id'] ?? $skill) : (is_object($skill) ? ($skill->id ?? $skill) : $skill))
             ->unique();
 
         if ($userSkills->isEmpty()) {

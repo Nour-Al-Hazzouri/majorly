@@ -12,7 +12,9 @@ import { Sparkles, CheckCircle, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/components/providers/AuthProvider';
 import WelcomeStep from '@/components/features/assessment/WelcomeStep';
 import SkillsStep from '@/components/features/assessment/SkillsStep';
+import { cn } from '@/lib/utils';
 import RatingStep from '@/components/features/assessment/RatingStep';
+import ResultsStep from '@/components/features/assessment/ResultsStep';
 import { toast } from 'sonner';
 
 const AssessmentWizard = () => {
@@ -27,7 +29,10 @@ const AssessmentWizard = () => {
         setUserId: setStoreUserId,
         nextStep,
         prevStep,
+        setStep,
         responses,
+        results,
+        setResults,
         isSubmitting,
         setIsSubmitting,
         reset: resetStore
@@ -101,7 +106,8 @@ const AssessmentWizard = () => {
         setIsSubmitting(true);
         try {
             await api.patch(`/api/assessments/${assessmentId}`, { responses });
-            await api.post(`/api/assessments/${assessmentId}/submit`);
+            const response = await api.post(`/api/assessments/${assessmentId}/submit`);
+            setResults(response.data.recommendations);
             toast.success('Assessment submitted successfully!');
             nextStep();
         } catch (error) {
@@ -109,6 +115,12 @@ const AssessmentWizard = () => {
         } finally {
             setIsSubmitting(false);
         }
+    };
+
+    const handleRetake = () => {
+        resetStore();
+        setStep(0);
+        window.scrollTo(0, 0);
     };
 
     if (isLoading || authIsLoading) {
@@ -149,77 +161,68 @@ const AssessmentWizard = () => {
                 </div>
             </nav>
 
-            <div className="max-w-3xl mx-auto py-12 px-4">
-                <div className="mb-10 text-center">
-                    <div className="flex justify-between items-end mb-3 px-1">
-                        <span className="text-xs font-bold text-[#4F46E5] uppercase tracking-wider">
-                            Assessment Progress
-                        </span>
-                        <span className="text-xs font-bold text-[#64748b]">
-                            {Math.round(progress)}% Complete
-                        </span>
+            <div className={cn(
+                "mx-auto py-12 px-4 transition-all duration-500",
+                results ? "max-w-4xl" : "max-w-3xl"
+            )}>
+                {!results && (
+                    <div className="mb-10 text-center">
+                        <div className="flex justify-between items-end mb-3 px-1">
+                            <span className="text-xs font-bold text-[#4F46E5] uppercase tracking-wider">
+                                Assessment Progress
+                            </span>
+                            <span className="text-xs font-bold text-[#64748b]">
+                                {Math.round(progress)}% Complete
+                            </span>
+                        </div>
+                        <div className="w-full bg-white/50 rounded-full h-2.5 shadow-sm overflow-hidden border border-white">
+                            <motion.div
+                                initial={{ width: 0 }}
+                                animate={{ width: `${progress}%` }}
+                                className="h-full bg-gradient-to-r from-[#4F46E5] to-[#7C3AED]"
+                            />
+                        </div>
                     </div>
-                    <div className="w-full bg-white/50 rounded-full h-2.5 shadow-sm overflow-hidden border border-white">
-                        <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${progress}%` }}
-                            className="h-full bg-gradient-to-r from-[#4F46E5] to-[#7C3AED]"
-                        />
-                    </div>
-                </div>
+                )}
 
                 <AnimatePresence mode="wait">
-                    <motion.div
-                        key={currentStep}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        transition={{ duration: 0.4, ease: "easeOut" }}
-                    >
-                        {currentStep === 0 && <WelcomeStep onStart={handleStart} />}
+                    {results ? (
+                        <ResultsStep
+                            key="results"
+                            results={results}
+                            onRetake={handleRetake}
+                        />
+                    ) : (
+                        <motion.div
+                            key={currentStep}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            transition={{ duration: 0.4, ease: "easeOut" }}
+                        >
+                            {currentStep === 0 && <WelcomeStep onStart={handleStart} />}
 
-                        {currentStep > 0 && currentStep <= sections.length && (
-                            <div className="space-y-6">
-                                {sections[currentStep - 1].type === 'skills_search' ? (
-                                    <SkillsStep
-                                        section={sections[currentStep - 1]}
-                                        onNext={handleSaveProgress}
-                                        onBack={prevStep}
-                                    />
-                                ) : (
-                                    <RatingStep
-                                        section={sections[currentStep - 1]}
-                                        onNext={currentStep === sections.length ? handleSubmit : handleSaveProgress}
-                                        onBack={prevStep}
-                                        isLastStep={currentStep === sections.length}
-                                        isSubmitting={isSubmitting}
-                                    />
-                                )}
-                            </div>
-                        )}
-
-                        {currentStep > sections.length && (
-                            <Card className="text-center p-12 bg-white/70 backdrop-blur-xl border-white shadow-2xl rounded-[2rem]">
-                                <CardHeader>
-                                    <div className="w-20 h-20 rounded-3xl bg-[#F5F3FF] flex items-center justify-center mx-auto mb-6">
-                                        <CheckCircle className="w-10 h-10 text-[#4F46E5]" />
-                                    </div>
-                                    <CardTitle className="text-3xl font-bold text-[#1e293b] mb-4">Assessment Complete!</CardTitle>
-                                    <CardDescription className="text-lg text-[#64748b] mb-8">
-                                        We're analyzing your responses to find the perfect majors for you.
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <Button asChild size="lg" className="rounded-full bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] px-10 h-14 text-lg">
-                                        <Link href="/dashboard">
-                                            View Results Dashboard
-                                            <ArrowRight className="ml-2 w-5 h-5" />
-                                        </Link>
-                                    </Button>
-                                </CardContent>
-                            </Card>
-                        )}
-                    </motion.div>
+                            {currentStep > 0 && currentStep <= sections.length && (
+                                <div className="space-y-6">
+                                    {sections[currentStep - 1].type === 'skills_search' ? (
+                                        <SkillsStep
+                                            section={sections[currentStep - 1]}
+                                            onNext={handleSaveProgress}
+                                            onBack={prevStep}
+                                        />
+                                    ) : (
+                                        <RatingStep
+                                            section={sections[currentStep - 1]}
+                                            onNext={currentStep === sections.length ? handleSubmit : handleSaveProgress}
+                                            onBack={prevStep}
+                                            isLastStep={currentStep === sections.length}
+                                            isSubmitting={isSubmitting}
+                                        />
+                                    )}
+                                </div>
+                            )}
+                        </motion.div>
+                    )}
                 </AnimatePresence>
             </div>
         </div>

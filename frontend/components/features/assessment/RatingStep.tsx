@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import { useAssessmentStore, AssessmentSection } from '@/store/slices/assessmentStore';
+import { useAssessmentStore } from '@/store/slices/assessmentStore';
+import { AssessmentSection } from '@/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';

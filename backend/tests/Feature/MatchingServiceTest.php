@@ -22,6 +22,17 @@ class MatchingServiceTest extends TestCase
         $this->matchingService = new MatchingService();
     }
 
+    /**
+     * Helper to invoke private/protected methods.
+     */
+    protected function invokeMethod(&$object, $methodName, array $parameters = [])
+    {
+        $reflection = new \ReflectionClass(get_class($object));
+        $method = $reflection->getMethod($methodName);
+        $method->setAccessible(true);
+        return $method->invokeArgs($object, $parameters);
+    }
+
     public function test_it_calculates_correct_skill_scores()
     {
         // Setup Major with specific skills
@@ -116,5 +127,21 @@ class MatchingServiceTest extends TestCase
             'assessment_id' => $assessment->id,
             'major_id' => $major->id
         ]);
+    }
+
+    public function test_it_handles_skill_objects_from_frontend()
+    {
+        $major = Major::create(['name' => 'CS', 'slug' => 'cs', 'category' => 'Test']);
+        $skill1 = Skill::create(['name' => 'PHP']);
+        $major->skills()->attach($skill1->id);
+
+        $responses = collect([
+            'skills_current' => [['id' => $skill1->id, 'name' => 'PHP']], // Sent as array
+            'skills_aspiration' => []
+        ]);
+
+        $score = $this->invokeMethod($this->matchingService, 'calculateSkillScore', [$major, $responses]);
+
+        $this->assertEquals(100, $score);
     }
 }

@@ -10,11 +10,17 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ProfileForm } from "@/components/features/dashboard/ProfileForm";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { User, History, Heart, Settings, LayoutDashboard } from "lucide-react";
+import { useSearchParams, useRouter } from "next/navigation";
 
 export default function ProfilePage() {
     const { user } = useAuth();
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const tabParam = searchParams.get('tab') || 'overview';
+
     const [profileData, setProfileData] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState(tabParam);
 
     const fetchProfile = async () => {
         try {
@@ -30,6 +36,18 @@ export default function ProfilePage() {
     useEffect(() => {
         fetchProfile();
     }, []);
+
+    // Sync state with URL param
+    useEffect(() => {
+        if (tabParam && tabParam !== activeTab) {
+            setActiveTab(tabParam);
+        }
+    }, [tabParam, activeTab]);
+
+    const handleTabChange = (value: string) => {
+        setActiveTab(value);
+        router.push(`/dashboard/profile?tab=${value}`, { scroll: false });
+    };
 
     if (isLoading) {
         return (
@@ -56,7 +74,7 @@ export default function ProfilePage() {
                         <p className="text-slate-500 mt-2">Manage your account and view your academic progress.</p>
                     </header>
 
-                    <Tabs defaultValue="overview" className="space-y-8">
+                    <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-8">
                         <TabsList className="bg-slate-100/50 border border-slate-200 p-1.5 rounded-xl inline-flex w-auto">
                             <TabsTrigger
                                 value="overview"

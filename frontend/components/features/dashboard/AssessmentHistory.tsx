@@ -59,7 +59,7 @@ export function AssessmentHistory({ assessments, compact = false }: AssessmentHi
                         </div>
                         {!compact && (
                             <Button asChild variant="ghost" size="sm" className="text-indigo-600">
-                                <Link href={`/assessment/results/${assessment.id}`}>
+                                <Link href={`/dashboard/assessments/${assessment.id}`}>
                                     View Details <ArrowRight className="ml-2 h-4 w-4" />
                                 </Link>
                             </Button>

@@ -44,20 +44,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const login = async (data: LoginInput) => {
         await getCsrfCookie();
-        await api.post('/login', data);
+        await api.post('/api/login', data);
         await checkAuthStatus();
         router.push('/dashboard');
     };
 
     const register = async (data: RegisterInput) => {
         await getCsrfCookie();
-        await api.post('/register', data);
+        await api.post('/api/register', data);
         await checkAuthStatus();
         router.push('/dashboard');
     };
 
     const logout = async () => {
-        await api.post('/logout');
+        await api.post('/api/logout');
         setUser(null);
         router.push('/login');
     };

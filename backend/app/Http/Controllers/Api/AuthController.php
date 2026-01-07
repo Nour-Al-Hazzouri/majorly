@@ -20,12 +20,11 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+        Auth::login($user);
 
         return response()->json([
             'message' => 'User registered successfully',
             'user' => $user,
-            'token' => $token,
         ], 201);
     }
 
@@ -37,13 +36,11 @@ class AuthController extends Controller
             ], 401);
         }
 
-        $user = User::where('email', $request->email)->firstOrFail();
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $user = Auth::user();
 
         return response()->json([
             'message' => 'Login successful',
             'user' => $user,
-            'token' => $token,
         ]);
     }
 

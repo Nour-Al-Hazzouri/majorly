@@ -45,4 +45,14 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function assessments()
+    {
+        return $this->hasMany(Assessment::class);
+    }
+
+    public function savedMajors()
+    {
+        return $this->belongsToMany(Major::class, 'saved_majors')->withTimestamps();
+    }
 }

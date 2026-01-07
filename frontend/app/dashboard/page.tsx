@@ -2,8 +2,9 @@
 
 import { useAuth } from "@/components/providers/AuthProvider";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, LogOut, User, Settings, BookOpen } from "lucide-react";
+import { LayoutDashboard, LogOut, BookOpen, Sparkles } from "lucide-react";
 import { motion } from "motion/react";
+import Link from "next/link";
 
 export default function DashboardPage() {
     const { user, logout } = useAuth();
@@ -11,30 +12,43 @@ export default function DashboardPage() {
     return (
         <div className="min-h-screen bg-[#F8FAFC]">
             {/* Sidebar */}
-            <aside className="fixed left-0 top-0 h-full w-64 bg-white border-r border-slate-200 p-6 hidden md:block">
+            <aside className="fixed left-0 top-0 h-full w-64 bg-white border-r border-slate-200 p-6 hidden md:flex flex-col">
                 <div className="flex items-center gap-2 mb-10">
                     <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#4F46E5] to-[#7C3AED]" />
                     <span className="text-xl font-bold text-slate-900">Majorly</span>
                 </div>
 
-                <nav className="space-y-2">
-                    <Button variant="ghost" className="w-full justify-start gap-3 bg-indigo-50 text-indigo-700">
-                        <LayoutDashboard className="w-5 h-5" />
-                        Dashboard
+                <nav className="space-y-2 flex-grow">
+                    <Button asChild variant="ghost" className="w-full justify-start gap-3 bg-indigo-50 text-indigo-700">
+                        <Link href="/dashboard">
+                            <LayoutDashboard className="w-5 h-5" />
+                            Dashboard
+                        </Link>
                     </Button>
-                    <Button variant="ghost" className="w-full justify-start gap-3 text-slate-600">
-                        <BookOpen className="w-5 h-5" />
-                        My Assessments
+                    <Button asChild variant="ghost" className="w-full justify-start gap-3 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">
+                        <Link href="/majors">
+                            <BookOpen className="w-5 h-5" />
+                            Browse Majors
+                        </Link>
                     </Button>
-                    <Button variant="ghost" className="w-full justify-start gap-3 text-slate-600">
-                        <User className="w-5 h-5" />
-                        Profile
-                    </Button>
-                    <Button variant="ghost" className="w-full justify-start gap-3 text-slate-600">
-                        <Settings className="w-5 h-5" />
-                        Settings
+                    <Button asChild variant="ghost" className="w-full justify-start gap-3 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">
+                        <Link href="/assessment">
+                            <Sparkles className="w-5 h-5 text-indigo-500" />
+                            Quick Assessment
+                        </Link>
                     </Button>
                 </nav>
+
+                <div className="mt-auto pt-6 border-t border-slate-100">
+                    <Button
+                        variant="ghost"
+                        onClick={() => logout()}
+                        className="w-full justify-start gap-3 text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors"
+                    >
+                        <LogOut className="w-5 h-5" />
+                        Log Out
+                    </Button>
+                </div>
             </aside>
 
             {/* Main Content */}
@@ -44,10 +58,6 @@ export default function DashboardPage() {
                         <h1 className="text-2xl font-bold text-slate-900">Welcome back, {user?.name}!</h1>
                         <p className="text-slate-500 text-sm">Here's what's happening with your academic journey.</p>
                     </div>
-                    <Button variant="outline" onClick={() => logout()} className="gap-2">
-                        <LogOut className="w-4 h-4" />
-                        Log Out
-                    </Button>
                 </header>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -70,7 +80,9 @@ export default function DashboardPage() {
                             <BookOpen className="w-6 h-6 text-slate-400" />
                         </div>
                         <p className="text-sm font-medium text-slate-600">No recent assessments</p>
-                        <Button variant="link" className="text-indigo-600">Start discovery</Button>
+                        <Button asChild variant="link" className="text-indigo-600">
+                            <Link href="/assessment">Start discovery</Link>
+                        </Button>
                     </div>
                 </div>
             </main>

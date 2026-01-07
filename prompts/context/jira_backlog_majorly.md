@@ -723,6 +723,7 @@ Major Recommendation Platform (MRP) - A web-based platform to help students choo
   - **Points**: 2
 
 ---
+---
 
 ## EPIC 6: Major Details & Resources
 **Epic Description**: Build detailed major pages showing skills, career paths, salary data, and resources. Implement browse/search functionality.

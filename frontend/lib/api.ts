@@ -13,4 +13,9 @@ const api = axios.create({
 // This is required for Sanctum cookie-based auth
 export const getCsrfCookie = () => api.get('/sanctum/csrf-cookie');
 
+// Major Detail API
+export const getMajors = (params?: { search?: string, category?: string, page?: number }) =>
+    api.get('/api/majors', { params });
+export const getMajorBySlug = (slug: string) => api.get(`/api/majors/${slug}`);
+
 export default api;

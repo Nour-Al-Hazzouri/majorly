@@ -51,7 +51,7 @@ export function AssessmentHistory({ assessments, compact = false }: AssessmentHi
                                 <div
                                     key={result.id}
                                     className="inline-block h-8 w-8 rounded-full ring-2 ring-white bg-indigo-100 flex items-center justify-center text-[10px] font-bold text-indigo-700"
-                                    title={result.major.name}
+                                    title={result.major?.name || result.specialization?.name}
                                 >
                                     {Math.round(result.match_percentage)}%
                                 </div>

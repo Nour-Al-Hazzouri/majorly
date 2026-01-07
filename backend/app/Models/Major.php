@@ -6,7 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Major extends Model
 {
-    protected $fillable = ['name', 'slug', 'category', 'description'];
+    protected $fillable = ['name', 'slug', 'category', 'description', 'ideal_interests', 'ideal_strengths'];
+
+    protected $casts = [
+        'ideal_interests' => 'array',
+        'ideal_strengths' => 'array',
+    ];
 
     public function skills()
     {

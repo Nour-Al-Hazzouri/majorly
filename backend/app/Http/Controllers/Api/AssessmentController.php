@@ -6,16 +6,19 @@ use App\Http\Controllers\Controller;
 use App\Models\Assessment;
 use App\Models\AssessmentResponse;
 use App\Services\QuestionService;
+use App\Services\MatchingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class AssessmentController extends Controller
 {
     protected $questionService;
+    protected $matchingService;
 
-    public function __construct(QuestionService $questionService)
+    public function __construct(QuestionService $questionService, MatchingService $matchingService)
     {
         $this->questionService = $questionService;
+        $this->matchingService = $matchingService;
     }
 
     /**
@@ -99,11 +102,12 @@ class AssessmentController extends Controller
 
         $assessment->update(['status' => 'completed']);
 
-        // TODO: Trigger matching algorithm (Tier 1 results calculation)
+        $recommendations = $this->matchingService->generateRecommendations($assessment);
         
         return response()->json([
-            'message' => 'Assessment submitted successfully. Results are being processed.',
-            'assessment' => $assessment
+            'message' => 'Assessment submitted successfully. Results processed.',
+            'assessment' => $assessment->load('results.major'),
+            'recommendations' => $recommendations
         ]);
     }
 }

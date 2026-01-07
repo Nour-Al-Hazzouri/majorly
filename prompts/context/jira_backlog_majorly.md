@@ -339,6 +339,7 @@ Major Recommendation Platform (MRP) - A web-based platform to help students choo
   - **Points**: 1
 
 ---
+---
 
 ### Story 3.3: Build Frontend Authentication Context
 **Description**:
@@ -421,6 +422,7 @@ Major Recommendation Platform (MRP) - A web-based platform to help students choo
   - **Priority**: Highest
   - **Points**: 1
 
+---
 ---
 
 ## EPIC 4: Tier 1 Assessment System

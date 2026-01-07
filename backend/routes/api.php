@@ -23,6 +23,10 @@ Route::post('/assessments', [AssessmentController::class, 'store']);
 Route::patch('/assessments/{assessment}', [AssessmentController::class, 'update']);
 Route::post('/assessments/{assessment}/submit', [AssessmentController::class, 'submit']);
 
+// Major Details
+Route::get('/majors', [\App\Http\Controllers\Api\MajorController::class, 'index']);
+Route::get('/majors/{slug}', [\App\Http\Controllers\Api\MajorController::class, 'show']);
+
 // Protected Routes
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {

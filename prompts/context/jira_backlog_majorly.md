@@ -423,6 +423,7 @@ Major Recommendation Platform (MRP) - A web-based platform to help students choo
   - **Points**: 1
 
 ---
+---
 
 ## EPIC 4: Tier 1 Assessment System
 **Epic Description**: Build the core assessment system including skills selection, interest profiler, strengths/weaknesses evaluation, and progress tracking.

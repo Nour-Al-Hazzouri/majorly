@@ -29,4 +29,9 @@ class Major extends Model
     {
         return $this->belongsToMany(User::class, 'saved_majors')->withTimestamps();
     }
+
+    public function specializations()
+    {
+        return $this->hasMany(Specialization::class);
+    }
 }

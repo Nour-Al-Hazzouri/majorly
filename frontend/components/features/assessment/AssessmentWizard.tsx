@@ -15,9 +15,15 @@ import SkillsStep from '@/components/features/assessment/SkillsStep';
 import { cn } from '@/lib/utils';
 import RatingStep from '@/components/features/assessment/RatingStep';
 import ResultsStep from '@/components/features/assessment/ResultsStep';
+import SpecializationResultsStep from '@/components/features/assessment/SpecializationResultsStep';
 import { toast } from 'sonner';
+import { AssessmentResult, SpecializationResult } from '@/types';
 
-const AssessmentWizard = () => {
+interface AssessmentWizardProps {
+    majorId?: number;
+}
+
+const AssessmentWizard = ({ majorId }: AssessmentWizardProps) => {
     const { user, isAuthenticated, isLoading: authIsLoading } = useAuth();
     const {
         currentStep,
@@ -60,10 +66,24 @@ const AssessmentWizard = () => {
         }
     }, [user, isAuthenticated, authIsLoading, storeUserId, setStoreUserId, resetStore]);
 
+    // Handle deep dive vs tier1 transitions
+    useEffect(() => {
+        // If we have an assessmentId but it's for a different type, reset
+        // This is a simple way to ensure we don't mix modes
+        // In a real app we might want to check the assessment type from the backend
+        if (majorId && !assessmentId) {
+            // We are entering a deep dive from scratch
+            resetStore();
+        }
+    }, [majorId, assessmentId, resetStore]);
+
     useEffect(() => {
         const fetchQuestions = async () => {
             try {
-                const response = await api.get('/api/assessments/questions');
+                const url = majorId
+                    ? `/api/assessments/questions?major_id=${majorId}`
+                    : '/api/assessments/questions';
+                const response = await api.get(url);
                 setSections(response.data);
             } catch (error) {
                 toast.error('Failed to load assessment questions');
@@ -74,12 +94,15 @@ const AssessmentWizard = () => {
         };
 
         fetchQuestions();
-    }, [setSections]);
+    }, [setSections, majorId]);
 
     const handleStart = async () => {
         try {
             if (!assessmentId) {
-                const response = await api.post('/api/assessments', { type: 'tier1' });
+                const payload = majorId
+                    ? { type: 'deep_dive', metadata: { major_id: majorId } }
+                    : { type: 'tier1' };
+                const response = await api.post('/api/assessments', payload);
                 setAssessmentId(response.data.id);
             }
             nextStep();
@@ -107,7 +130,12 @@ const AssessmentWizard = () => {
         try {
             await api.patch(`/api/assessments/${assessmentId}`, { responses });
             const response = await api.post(`/api/assessments/${assessmentId}/submit`);
-            setResults(response.data.recommendations);
+
+            // The backend returns results in different keys or structures 
+            // for tier1 (results) and deep_dive (recommendations)
+            const recommendations = response.data.recommendations || response.data.assessment?.results;
+            setResults(recommendations);
+
             toast.success('Assessment submitted successfully!');
             nextStep();
         } catch (error) {
@@ -187,11 +215,19 @@ const AssessmentWizard = () => {
 
                 <AnimatePresence mode="wait">
                     {results ? (
-                        <ResultsStep
-                            key="results"
-                            results={results}
-                            onRetake={handleRetake}
-                        />
+                        results.length > 0 && 'specialization_id' in results[0] ? (
+                            <SpecializationResultsStep
+                                key="specialization-results"
+                                results={results as SpecializationResult[]}
+                                onRetake={handleRetake}
+                            />
+                        ) : (
+                            <ResultsStep
+                                key="results"
+                                results={results as AssessmentResult[]}
+                                onRetake={handleRetake}
+                            />
+                        )
                     ) : (
                         <motion.div
                             key={currentStep}
@@ -200,7 +236,7 @@ const AssessmentWizard = () => {
                             exit={{ opacity: 0, y: -20 }}
                             transition={{ duration: 0.4, ease: "easeOut" }}
                         >
-                            {currentStep === 0 && <WelcomeStep onStart={handleStart} />}
+                            {currentStep === 0 && <WelcomeStep onStart={handleStart} isDeepDive={!!majorId} />}
 
                             {currentStep > 0 && currentStep <= sections.length && (
                                 <div className="space-y-6">

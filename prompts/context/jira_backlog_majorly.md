@@ -827,6 +827,7 @@ Major Recommendation Platform (MRP) - A web-based platform to help students choo
   - **Points**: 1
 
 ---
+---
 
 ## EPIC 7: Deep Dive Tests
 **Epic Description**: Implement optional major-specific deep dive assessments that provide specialized career recommendations within a major category.

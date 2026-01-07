@@ -15,4 +15,9 @@ class Occupation extends Model
     {
         return $this->belongsToMany(Major::class);
     }
+
+    public function specializations()
+    {
+        return $this->belongsToMany(Specialization::class);
+    }
 }

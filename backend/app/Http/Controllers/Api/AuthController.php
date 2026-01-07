@@ -25,7 +25,7 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'User registered successfully',
             'user' => $user,
-        ], 201);
+        ], 201)->withCookie(cookie('majorly_logged_in', 'true', 120, null, null, false, false));
     }
 
     public function login(LoginRequest $request)
@@ -41,15 +41,18 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Login successful',
             'user' => $user,
-        ]);
+        ])->withCookie(cookie('majorly_logged_in', 'true', 120, null, null, false, false));
     }
 
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        Auth::guard('web')->logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
         return response()->json([
             'message' => 'Logged out successfully'
-        ]);
+        ])->withCookie(cookie()->forget('majorly_logged_in'));
     }
 }

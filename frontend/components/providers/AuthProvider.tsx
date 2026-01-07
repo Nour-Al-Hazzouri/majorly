@@ -33,6 +33,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setUser(response.data);
         } catch (error) {
             setUser(null);
+            // Clear marker cookie if unauthorized
+            document.cookie = 'majorly_logged_in=; Max-Age=0; path=/;';
         } finally {
             setIsLoading(false);
         }
@@ -57,9 +59,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     const logout = async () => {
-        await api.post('/api/logout');
-        setUser(null);
-        router.push('/login');
+        try {
+            await api.post('/api/logout');
+        } catch (error) {
+            console.error('Logout error:', error);
+        } finally {
+            // Always clear local state and marker cookie
+            document.cookie = 'majorly_logged_in=; Max-Age=0; path=/;';
+            setUser(null);
+            router.push('/login');
+        }
     };
 
     return (

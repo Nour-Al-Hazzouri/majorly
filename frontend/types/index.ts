@@ -37,8 +37,10 @@ export interface Major {
 
 export interface AssessmentResult {
     id: number;
-    major_id: number;
-    major: Major;
+    major_id?: number;
+    major?: Major;
+    specialization_id?: number;
+    specialization?: Specialization;
     match_percentage: number;
     rank: number;
     reasoning: string[];

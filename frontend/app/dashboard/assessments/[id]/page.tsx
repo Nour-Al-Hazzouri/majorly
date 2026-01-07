@@ -78,16 +78,28 @@ export default function AssessmentResultsPage() {
                         </Button>
                     </div>
 
-                    {isDeepDive ? (
-                        <SpecializationResultsStep
-                            results={results}
-                            onRetake={() => router.push(`/assessment/deep_dive/${assessment.metadata?.major_id}`)}
-                        />
+                    {results && results.length > 0 ? (
+                        isDeepDive ? (
+                            <SpecializationResultsStep
+                                results={results.map((r: any) => ({
+                                    ...r,
+                                    scores: r.scores || { interests: 0, strengths: 0 }
+                                }))}
+                                onRetake={() => router.push(`/assessment/deep-dive/${assessment.metadata?.major_id}`)}
+                            />
+                        ) : (
+                            <ResultsStep
+                                results={results}
+                                onRetake={() => router.push('/assessment')}
+                            />
+                        )
                     ) : (
-                        <ResultsStep
-                            results={results}
-                            onRetake={() => router.push('/assessment')}
-                        />
+                        <div className="text-center py-20 bg-white rounded-2xl border border-dashed border-slate-300">
+                            <p className="text-slate-500 mb-4">No results available for this assessment.</p>
+                            <Button onClick={() => router.push(isDeepDive ? `/assessment/deep-dive/${assessment.metadata?.major_id}` : '/assessment')}>
+                                Retake Assessment
+                            </Button>
+                        </div>
                     )}
                 </div>
             </main>

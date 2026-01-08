@@ -32,9 +32,11 @@ class ImportOpenData extends Command
             // 3. Link Skills to Occupations
             $this->linkOnetSkills($onetPath);
 
-            // 4. Transform O*NET occupations to App Majors and Occupations
-            // Since CIP crosswalk is unavailable, we'll use SOC Major Groups as "Majors"
-            $this->transformToAppData();
+            // 4. Import Technology Skills
+            $this->importOnetTechSkills($onetPath);
+
+            // 5. Transform O*NET occupations to App Majors and Occupations
+            $this->transformToAppData($onetPath);
 
             DB::commit();
             $this->info("Success! 'Truth' data imported.");
@@ -155,6 +157,35 @@ class ImportOpenData extends Command
         }
     }
 
+    private function importOnetTechSkills($path)
+    {
+        $file = $path . '/Technology Skills.txt';
+        if (!file_exists($file)) return;
+
+        $this->info("Parsing Technology Skills...");
+        $lines = file($file, FILE_IGNORE_NEW_LINES);
+        
+        $insertData = [];
+        foreach ($lines as $index => $line) {
+            if ($index == 0) continue;
+            $parts = explode("\t", $line);
+            // Schema: O*NET-SOC Code[0], Example[1], Commodity Code[2], Commodity Title[3], Hot Tech[4], In Demand[5]
+            if (count($parts) < 2) continue;
+
+            $insertData[] = [
+                'soc_code' => $parts[0],
+                'skill_name' => $parts[1],
+                'hot_tech' => $parts[4] === 'Y' ? 1 : 0
+            ];
+
+            if (count($insertData) >= 1000) {
+                DB::table('onet_occupation_tech_skills')->insert($insertData);
+                $insertData = [];
+            }
+        }
+        if (!empty($insertData)) DB::table('onet_occupation_tech_skills')->insert($insertData);
+    }
+
     private function importCrosswalk($path)
     {
         $file = $path . '/CIP2020_SOC2018_Crosswalk.csv';
@@ -190,9 +221,15 @@ class ImportOpenData extends Command
         if (!empty($insertData)) DB::table('cip_soc_crosswalk')->insert($insertData);
     }
     
-    private function transformToAppData()
+    private function transformToAppData($onetPath = null)
     {
         $this->info("Transforming Staging to Application Tables...");
+        
+        // Parse tasks if path is provided
+        $socTasks = [];
+        if ($onetPath) {
+            $socTasks = $this->parseTasks($onetPath);
+        }
         
         // SOC Major Groups (First 2 digits) mapped to human-readable names
         $socMajorGroups = [
@@ -231,7 +268,9 @@ class ImportOpenData extends Command
                     'name' => $name,
                     'cip_code' => $code, // Store SOC prefix as cip_code
                     'description' => "Occupations in the $name field.",
-                    'category' => $this->categorizeByCode($code)
+                    'category' => $this->categorizeByCode($code),
+                    'ideal_interests' => json_encode($this->getIdealInterests($this->categorizeByCode($code))),
+                    'ideal_strengths' => json_encode($this->getIdealStrengths($this->categorizeByCode($code)))
                 ]
             );
             
@@ -249,7 +288,8 @@ class ImportOpenData extends Command
                         'name' => $onet->title,
                         'description' => $onet->description,
                         'median_salary' => $this->estimateSalary($onet->soc_code),
-                        'code' => $onet->soc_code
+                        'code' => $onet->soc_code,
+                        'tasks' => isset($socTasks[$onet->soc_code]) ? json_encode($socTasks[$onet->soc_code]) : null
                     ]
                 );
                 
@@ -273,19 +313,84 @@ class ImportOpenData extends Command
                         ['name' => $def->name],
                         ['category' => $category]
                     );
-                    
-                    // Attach to Major ONLY if importance >= 3.5 (high importance)
-                    // This filters out niche skills like Biology in Computer major
-                    // while keeping them available for specific occupations like Bioinformatics
                     if ($s->importance >= 3.5) {
                         $major->skills()->syncWithoutDetaching([$skill->id]);
                     }
                 }
+
+                // 4. Link Tech Skills for this Occupation (Hot Tech first, limit 5)
+                $techSkills = DB::table('onet_occupation_tech_skills')
+                    ->where('soc_code', $onet->soc_code)
+                    ->orderByDesc('hot_tech')
+                    ->limit(5)
+                    ->get();
+                
+                foreach ($techSkills as $ts) {
+                    $skill = Skill::firstOrCreate(
+                        ['name' => $ts->skill_name],
+                        ['category' => 'Technical Skill']
+                    );
+                    
+                    // Always link Hot Tech to Major if it's relevant
+                    if ($ts->hot_tech) {
+                        $major->skills()->syncWithoutDetaching([$skill->id]);
+                    }
+                }
+
                 $this->output->progressAdvance();
             }
             $this->output->progressFinish();
             $this->info("Created Major: $name with {$occupations->count()} occupations");
         }
+    }
+
+    private function parseTasks($path)
+    {
+        $file = $path . '/Task Statements.txt';
+        if (!file_exists($file)) return [];
+
+        $this->info("Parsing Task Statements...");
+        $lines = file($file, FILE_IGNORE_NEW_LINES);
+        
+        $tasks = [];
+        foreach ($lines as $index => $line) {
+            if ($index == 0) continue;
+            // Structure: O*NET-SOC Code[0], Task ID[1], Task[2], Task Type[3]
+            $parts = explode("\t", $line);
+            if (count($parts) < 4) continue;
+            
+            // Only use "Core" tasks
+            if ($parts[3] !== 'Core') continue;
+            
+            $soc = $parts[0];
+            $task = $parts[2];
+            
+            if (!isset($tasks[$soc])) {
+                $tasks[$soc] = [];
+            }
+            
+            // Limit to collecting 10 candidates per SOC to save memory
+            if (count($tasks[$soc]) < 10) {
+                $tasks[$soc][] = $task;
+            }
+        }
+        
+        // Pick 3 random tasks for each SOC
+        $finalTasks = [];
+        foreach ($tasks as $soc => $taskList) {
+            if (count($taskList) > 3) {
+                $keys = array_rand($taskList, 3);
+                $finalTasks[$soc] = [
+                    $taskList[$keys[0]],
+                    $taskList[$keys[1]],
+                    $taskList[$keys[2]]
+                ];
+            } else {
+                $finalTasks[$soc] = $taskList;
+            }
+        }
+        
+        return $finalTasks;
     }
 
     private function categorizeByCode($code)
@@ -319,5 +424,39 @@ class ImportOpenData extends Command
         ];
         $range = $salaries[$prefix] ?? [40000, 70000];
         return rand($range[0], $range[1]);
+    }
+
+    private function getIdealInterests($category)
+    {
+        switch ($category) {
+            case 'Business': return ['business_management' => 5, 'data_analysis' => 4, 'community_organizing' => 3];
+            case 'STEM': return ['scientific_research' => 5, 'mathematical_puzzles' => 5, 'technical_work' => 4, 'data_analysis' => 4];
+            case 'Social Sciences': return ['scientific_research' => 4, 'social_service' => 4, 'writing_copy' => 3];
+            case 'Education': return ['social_service' => 5, 'community_organizing' => 4];
+            case 'Arts & Humanities': return ['artistic_expression' => 5, 'writing_copy' => 5, 'social_service' => 3];
+            case 'Health Sciences': return ['social_service' => 5, 'scientific_research' => 4, 'technical_work' => 3];
+            case 'Public Service': return ['social_service' => 5, 'community_organizing' => 5, 'business_management' => 3];
+            case 'Service Industry': return ['social_service' => 5, 'business_management' => 4];
+            case 'Agriculture': return ['outdoor_activity' => 5, 'technical_work' => 4, 'scientific_research' => 3];
+            case 'Trades': return ['technical_work' => 5, 'outdoor_activity' => 4, 'data_analysis' => 3];
+            default: return ['scientific_research' => 3, 'artistic_expression' => 3, 'social_service' => 3, 'business_management' => 3]; 
+        }
+    }
+
+    private function getIdealStrengths($category)
+    {
+        switch ($category) {
+            case 'Business': return ['leadership' => 5, 'communication' => 5, 'strategic_planning' => 4];
+            case 'STEM': return ['analytical_thinking' => 5, 'technical_aptitude' => 5, 'detail_orientation' => 4];
+            case 'Social Sciences': return ['analytical_thinking' => 4, 'communication' => 5, 'adaptability' => 3];
+            case 'Education': return ['communication' => 5, 'leadership' => 4, 'adaptability' => 4];
+            case 'Arts & Humanities': return ['creative_problem_solving' => 5, 'communication' => 4, 'detail_orientation' => 3];
+            case 'Health Sciences': return ['detail_orientation' => 5, 'technical_aptitude' => 4, 'communication' => 4];
+            case 'Public Service': return ['leadership' => 4, 'communication' => 5, 'adaptability' => 4];
+            case 'Service Industry': return ['communication' => 5, 'adaptability' => 5, 'detail_orientation' => 3];
+            case 'Agriculture': return ['technical_aptitude' => 4, 'detail_orientation' => 4, 'adaptability' => 4];
+            case 'Trades': return ['technical_aptitude' => 5, 'detail_orientation' => 5, 'analytical_thinking' => 3];
+            default: return ['communication' => 3, 'analytical_thinking' => 3, 'adaptability' => 3];
+        }
     }
 }

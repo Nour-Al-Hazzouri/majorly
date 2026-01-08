@@ -9,7 +9,12 @@ class Occupation extends Model
 {
     use HasFactory;
     
-    protected $fillable = ['name', 'code', 'description', 'median_salary', 'job_outlook'];
+    protected $fillable = ['name', 'code', 'description', 'median_salary', 'job_outlook', 'tasks'];
+
+    protected $casts = [
+        'tasks' => 'array',
+    ];
+
 
     public function majors()
     {

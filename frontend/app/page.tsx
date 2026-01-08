@@ -5,9 +5,20 @@ import { ArrowRight, CheckCircle, Sparkles, Target, TrendingUp, User } from "luc
 import Link from "next/link";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { motion } from "motion/react";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function Home() {
   const { isAuthenticated, user, logout } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push('/dashboard');
+    }
+  }, [isAuthenticated, router]);
+
+  if (isAuthenticated) return null; // Avoid flicker
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#fdfcff] via-[#F5F3FF] to-[#fdfcff] font-sans">

@@ -40,9 +40,11 @@ export const CareerPaths: React.FC<CareerPathsProps> = ({ occupations }) => {
                                 <CardTitle className="text-xl group-hover:text-blue-600 transition-colors">
                                     {occupation.name}
                                 </CardTitle>
-                                <Badge variant="outline" className="text-xs font-mono">
-                                    {occupation.code}
-                                </Badge>
+                                {!occupation.code.startsWith('http') && (
+                                    <Badge variant="outline" className="text-xs font-mono">
+                                        {occupation.code}
+                                    </Badge>
+                                )}
                             </div>
                             <CardDescription className="line-clamp-2 mt-2">
                                 {occupation.description}

@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Major extends Model
 {
     use HasFactory;
-    protected $fillable = ['name', 'slug', 'category', 'description', 'ideal_interests', 'ideal_strengths'];
+    protected $fillable = ['name', 'slug', 'category', 'description', 'ideal_interests', 'ideal_strengths', 'cip_code'];
 
     protected $casts = [
         'ideal_interests' => 'array',

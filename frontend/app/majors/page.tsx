@@ -89,7 +89,21 @@ export default function MajorsPage() {
                 <div className="max-w-7xl mx-auto px-6 py-12 md:py-16">
                     <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                         <div className="space-y-4">
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-100">
+                            <div className="flex items-center gap-4">
+                                <Button
+                                    variant="ghost"
+                                    className="p-0 hover:bg-transparent group"
+                                    asChild
+                                >
+                                    <a href="/dashboard" className="flex items-center gap-2 text-slate-500 hover:text-slate-900 transition-colors">
+                                        <div className="p-2 rounded-xl bg-slate-100 group-hover:bg-slate-200 transition-colors">
+                                            <ChevronLeft className="w-4 h-4" />
+                                        </div>
+                                        <span className="text-sm font-semibold">Back to Dashboard</span>
+                                    </a>
+                                </Button>
+                            </div>
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-100 mt-4">
                                 <Sparkles className="w-4 h-4 text-blue-600" />
                                 <span className="text-xs font-semibold text-blue-700 uppercase tracking-wider">Explore Majors</span>
                             </div>
@@ -102,33 +116,14 @@ export default function MajorsPage() {
                         </div>
                     </div>
 
-                    <div className="mt-10 flex flex-col md:flex-row gap-4">
-                        <div className="relative flex-grow">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                            <Input
-                                placeholder="Search majors by name or keyword..."
-                                className="pl-10 h-12 rounded-xl border-slate-200 focus:ring-blue-600"
-                                value={searchTerm}
-                                onChange={handleSearchChange}
-                            />
-                        </div>
-                        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide md:pb-0">
-                            <SlidersHorizontal className="w-5 h-5 text-slate-400 mr-2 flex-shrink-0" />
-                            {CATEGORIES.map((category) => (
-                                <Button
-                                    key={category}
-                                    variant={selectedCategory === category ? 'default' : 'outline'}
-                                    size="sm"
-                                    className={`rounded-full px-5 h-10 flex-shrink-0 transition-all ${selectedCategory === category
-                                            ? 'bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-200'
-                                            : 'border-slate-200 text-slate-600 hover:bg-slate-50'
-                                        }`}
-                                    onClick={() => handleCategorySelect(category)}
-                                >
-                                    {category}
-                                </Button>
-                            ))}
-                        </div>
+                    <div className="mt-12 relative w-full max-w-2xl mx-auto">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                        <Input
+                            placeholder="Search majors by name or keyword..."
+                            className="pl-12 h-14 rounded-2xl border-slate-200 focus:ring-blue-600 text-lg shadow-sm"
+                            value={searchTerm}
+                            onChange={handleSearchChange}
+                        />
                     </div>
                 </div>
             </section>

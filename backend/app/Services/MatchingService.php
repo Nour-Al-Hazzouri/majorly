@@ -29,6 +29,10 @@ class MatchingService
             // Weighting: 50% Skills, 30% Interests, 20% Strengths
             $matchPercentage = ($skillScore * 0.5) + ($interestScore * 0.3) + ($strengthScore * 0.2);
 
+            // Tie-breaker: Add a tiny bit of deterministic variance based on ID (to avoid exactly 20% for everyone if scores are flat)
+            // This ensures we always have a clear ranking.
+            $matchPercentage += ($major->id % 100) / 10000;
+
             return [
                 'major_id' => $major->id,
                 'major' => $major,
@@ -70,42 +74,102 @@ class MatchingService
     public function generateSpecializationRecommendations(Assessment $assessment, Major $major): Collection
     {
         $responses = $assessment->responses()->pluck('response_value', 'question_id');
-        $specializations = $major->specializations()->with('occupations')->get();
+        
+        $behavioralRatings = [];
+        $occupationRatings = [];
 
-        $results = $specializations->map(function (Specialization $specialization) use ($responses) {
-            $interestScore = $this->calculateRatingScore($specialization->ideal_interests ?? [], $responses['interests'] ?? []);
-            $strengthScore = $this->calculateRatingScore($specialization->ideal_strengths ?? [], $responses['strengths_weaknesses'] ?? []);
+        // Parse responses into behavioral (baseline) and occupation-specific
+        foreach ($responses as $questionId => $rating) {
+            if (str_starts_with($questionId, 'occupation_')) {
+                $occupationId = str_replace('occupation_', '', $questionId);
+                $occupationRatings[$occupationId] = $rating;
+            } elseif (is_numeric($rating)) {
+                // Curated behavioral IDs: st1, bu1, he1, etc.
+                // We only include simple numeric ratings for the baseline
+                $behavioralRatings[] = $rating;
+            }
+        }
 
-            // Weighting for specialization: 60% Interests, 40% Strengths (Skills are already broad for the major)
-            $matchPercentage = ($interestScore * 0.6) + ($strengthScore * 0.4);
+        // Calculate baseline score from behavioral questions (0-100)
+        $baselineScore = 20.0; // Default baseline
+        if (count($behavioralRatings) > 0) {
+            $averageRating = array_sum($behavioralRatings) / count($behavioralRatings);
+            // 1 = 0%, 5 = 100%
+            $baselineScore = (($averageRating - 1) / 4) * 100;
+        }
 
-            return [
-                'specialization_id' => $specialization->id,
-                'specialization' => $specialization,
-                'match_percentage' => round($matchPercentage, 2),
+        $results = collect();
+        $occupations = $major->occupations;
+
+        foreach ($occupations as $occupation) {
+            $matchPercentage = $baselineScore;
+
+            // If we have a specific rating for this occupation, use it to fine-tune
+            // Let the direct rating have 70% weight if present, baseline 30%
+            if (isset($occupationRatings[$occupation->id])) {
+                $directRating = $occupationRatings[$occupation->id];
+                $directScore = (($directRating - 1) / 4) * 100;
+                $matchPercentage = ($directScore * 0.7) + ($baselineScore * 0.3);
+            }
+
+            // Differentiate based on occupation "data weight" to prevent ties
+            $taskCount = is_array($occupation->tasks) ? count($occupation->tasks) : 0;
+            $dataFit = min(3, $taskCount / 10); // Max 3% boost for roles with more task data
+            $matchPercentage += $dataFit;
+
+            // Add a visible deterministic spread based on ID (0.1% to 1.5%)
+            $matchPercentage += ($occupation->id % 15) / 10;
+
+            $results->push([
+                'occupation_id' => $occupation->id,
+                'occupation' => $occupation,
+                'specialization_id' => null,
+                'specialization' => null,
+                'match_percentage' => $matchPercentage,
                 'scores' => [
-                    'interests' => $interestScore,
-                    'strengths' => $strengthScore,
+                    'behavioral' => $baselineScore,
+                    'specific' => isset($occupationRatings[$occupation->id]) ? ($directScore ?? 0) : 0,
                 ]
-            ];
-        });
+            ]);
+        }
 
         $rankedResults = $results->sortByDesc('match_percentage')->values();
 
-        // Save specialization results
+        // Enforce stratification: only first 2 can have same value, others must decay
+        $finalResults = collect();
+        $lastScore = null;
+        
+        foreach ($rankedResults as $index => $data) {
+            $currentScore = round($data['match_percentage'], 2);
+            
+            if ($index > 1 && $lastScore !== null) {
+                // Ensure strictly decreasing after top 2
+                if ($currentScore >= $lastScore) {
+                    $currentScore = $lastScore - 1.5; // Decisive 1.5% drop
+                }
+            }
+            
+            $data['match_percentage'] = max(5, min(100, $currentScore));
+            $finalResults->push($data);
+            $lastScore = $currentScore;
+        }
+
+        // Save results
         $assessment->results()->delete();
 
-        foreach ($rankedResults as $index => $data) {
+        foreach ($finalResults->take(15) as $index => $data) {
             AssessmentResult::create([
                 'assessment_id' => $assessment->id,
-                'specialization_id' => $data['specialization_id'],
+                'major_id' => $major->id,
+                'occupation_id' => $data['occupation_id'],
+                'specialization_id' => null,
                 'match_percentage' => $data['match_percentage'],
                 'rank' => $index + 1,
-                'reasoning' => [], // Specialization reasoning can be added later if needed
+                'reasoning' => [], 
             ]);
         }
         
-        return $rankedResults;
+        return $finalResults->take(15);
     }
 
     private function calculateSkillScore(Major $major, Collection $responses): float
@@ -140,10 +204,20 @@ class MatchingService
      * @param array $userRatings
      * @return float (0-100)
      */
-    private function calculateRatingScore(array $idealProfile, array $userRatings): float
+    /**
+     * @param array|string $idealProfile
+     * @param array $userRatings
+     * @return float (0-100)
+     */
+    private function calculateRatingScore($idealProfile, $userRatings): float
     {
-        if (empty($idealProfile)) {
-            return 0;
+        // Handle case where idealProfile is a JSON string (sometimes Laravel doesn't cast early enough)
+        if (is_string($idealProfile)) {
+            $idealProfile = json_decode($idealProfile, true);
+        }
+
+        if (empty($idealProfile) || empty($userRatings)) {
+            return 20.0; // Default baseline score
         }
 
         $totalDiff = 0;

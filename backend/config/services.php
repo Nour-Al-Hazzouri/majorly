@@ -40,4 +40,8 @@ return [
         'client_secret' => env('LIGHTCAST_CLIENT_SECRET'),
     ],
 
+    'onet' => [
+        'api_key' => env('ONET_API_KEY'),
+    ],
+
 ];

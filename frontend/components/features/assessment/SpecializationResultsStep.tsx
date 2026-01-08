@@ -47,7 +47,7 @@ export default function SpecializationResultsStep({ results, onRetake }: Special
             <div className="space-y-6">
                 {results.map((result, index) => (
                     <SpecializationCard
-                        key={result.specialization.id}
+                        key={result.specialization?.id || result.occupation?.id}
                         result={result}
                         index={index}
                     />
@@ -80,7 +80,12 @@ export default function SpecializationResultsStep({ results, onRetake }: Special
 
 function SpecializationCard({ result, index }: { result: SpecializationResult; index: number }) {
     const [isExpanded, setIsExpanded] = useState(index === 0);
-    const spec = result.specialization;
+
+    // Determine if it's a Specialization or Occupation
+    const item = result.specialization || result.occupation;
+    const isOccupation = !!result.occupation;
+
+    if (!item) return null;
 
     return (
         <motion.div
@@ -105,10 +110,13 @@ function SpecializationCard({ result, index }: { result: SpecializationResult; i
                                 {index + 1}
                             </div>
                             <div>
-                                <h3 className="text-xl font-bold text-[#1e293b]">{spec.name}</h3>
+                                <h3 className="text-xl font-bold text-[#1e293b]">{item.name}</h3>
                                 <div className="flex items-center gap-2 mt-1">
-                                    <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full uppercase tracking-wider">
-                                        Specialization
+                                    <span className={cn(
+                                        "text-xs font-bold px-2 py-0.5 rounded-full uppercase tracking-wider",
+                                        isOccupation ? "text-emerald-600 bg-emerald-50" : "text-indigo-600 bg-indigo-50"
+                                    )}>
+                                        {isOccupation ? 'Career Path' : 'Specialization'}
                                     </span>
                                 </div>
                             </div>
@@ -116,7 +124,10 @@ function SpecializationCard({ result, index }: { result: SpecializationResult; i
 
                         <div className="flex items-center gap-6">
                             <div className="text-right">
-                                <span className="text-3xl font-black text-indigo-600">
+                                <span className={cn(
+                                    "text-3xl font-black",
+                                    isOccupation ? "text-emerald-600" : "text-indigo-600"
+                                )}>
                                     {Math.round(result.match_percentage)}%
                                 </span>
                                 <p className="text-[10px] font-bold text-[#64748b] uppercase tracking-wider">Match Score</p>
@@ -140,17 +151,36 @@ function SpecializationCard({ result, index }: { result: SpecializationResult; i
                             <CardContent className="pt-0 pb-6 px-6 bg-white/40 backdrop-blur-sm border-t border-white/40">
                                 <div className="space-y-6 pt-6">
                                     <p className="text-[#475569] leading-relaxed">
-                                        {spec.description}
+                                        {item.description}
                                     </p>
 
-                                    {spec.occupations && spec.occupations.length > 0 && (
+                                    {/* Additional Occupation Info */}
+                                    {isOccupation && (result.occupation) && (
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="bg-white/60 p-4 rounded-xl">
+                                                <div className="text-xs text-[#64748b] font-bold uppercase mb-1">Median Salary</div>
+                                                <div className="text-lg font-bold text-slate-800">
+                                                    ${parseInt(result.occupation.median_salary || '0').toLocaleString()}
+                                                </div>
+                                            </div>
+                                            <div className="bg-white/60 p-4 rounded-xl">
+                                                <div className="text-xs text-[#64748b] font-bold uppercase mb-1">Job Outlook</div>
+                                                <div className="text-lg font-bold text-emerald-600">
+                                                    {result.occupation.job_outlook || 'Growth Stable'}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Legacy Specialization Logic */}
+                                    {!isOccupation && result.specialization?.occupations && result.specialization.occupations.length > 0 && (
                                         <div className="space-y-3">
                                             <div className="flex items-center gap-2 text-indigo-600 font-bold text-sm uppercase tracking-wide">
                                                 <Briefcase className="w-4 h-4" />
                                                 Related Career Paths
                                             </div>
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                                {spec.occupations.map((occ) => (
+                                                {result.specialization.occupations.map((occ: any) => (
                                                     <div key={occ.id} className="bg-white/80 p-4 rounded-xl border border-white shadow-sm hover:shadow-md transition-all">
                                                         <h4 className="font-bold text-[#1e293b] text-sm mb-2">{occ.name}</h4>
                                                         <div className="flex flex-wrap gap-3 text-xs text-[#64748b]">
@@ -168,15 +198,6 @@ function SpecializationCard({ result, index }: { result: SpecializationResult; i
                                             </div>
                                         </div>
                                     )}
-
-                                    <div className="flex flex-wrap gap-3 pt-2">
-                                        <Button asChild className="rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-600/20 gap-2">
-                                            <Link href={`/majors/search?specialization=${spec.slug}`}>
-                                                Explore Specialization
-                                                <ArrowRight className="w-4 h-4" />
-                                            </Link>
-                                        </Button>
-                                    </div>
                                 </div>
                             </CardContent>
                         </motion.div>

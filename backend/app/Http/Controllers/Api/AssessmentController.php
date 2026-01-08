@@ -172,7 +172,8 @@ class AssessmentController extends Controller
 
         $assessment->load([
             'results.major',
-            'results.specialization.occupations'
+            'results.specialization.occupations',
+            'results.occupation'
         ]);
 
         return response()->json([

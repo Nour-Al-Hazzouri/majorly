@@ -37,9 +37,10 @@ class FetchOnetOccupations extends Command
                 ['code' => $data['code']],
                 [
                     'name' => $data['name'],
-                    'description' => $data['description'],
-                    'median_salary' => $data['median_salary'],
-                    'job_outlook' => $data['job_outlook']
+                    // Use description if available, otherwise name
+                    'description' => $data['description'] ?: $data['name'],
+                    'median_salary' => $data['median_salary'] ?? 0,
+                    'job_outlook' => $data['job_outlook'] ?? 'Average'
                 ]
             );
             $this->output->progressAdvance();

@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { getMajorBySlug } from '@/lib/api';
 import { MajorHeader } from './MajorHeader';
 import { SkillsList } from './SkillsList';
+import { SpecializationsList } from './SpecializationsList';
 import { CareerPaths } from './CareerPaths';
 import { Loader2, AlertCircle, ChevronLeft, Briefcase, Sparkles, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -95,6 +96,12 @@ export const MajorDetailView: React.FC<MajorDetailViewProps> = ({ slug }) => {
 
                 <section>
                     <SkillsList skills={major.skills} />
+                </section>
+
+                <hr className="border-slate-100" />
+
+                <section>
+                    <SpecializationsList specializations={major.specializations} />
                 </section>
 
                 <hr className="border-slate-100" />

@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class AssessmentResult extends Model
 {
-    protected $fillable = ['assessment_id', 'major_id', 'specialization_id', 'match_percentage', 'reasoning', 'rank'];
+    protected $fillable = ['assessment_id', 'major_id', 'specialization_id', 'occupation_id', 'match_percentage', 'reasoning', 'rank'];
 
     protected $casts = [
         'reasoning' => 'array',
@@ -26,5 +26,10 @@ class AssessmentResult extends Model
     public function specialization()
     {
         return $this->belongsTo(Specialization::class);
+    }
+
+    public function occupation()
+    {
+        return $this->belongsTo(Occupation::class);
     }
 }

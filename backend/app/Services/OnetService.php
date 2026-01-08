@@ -2,16 +2,95 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+
 class OnetService
 {
+    private string $apiKey;
+    private string $baseUrl = 'https://services.onetcenter.org/ws/';
+
+    public function __construct()
+    {
+        $this->apiKey = config('services.onet.api_key') ?? '';
+    }
+
     /**
-     * Fetch occupations from O*NET API (Mock for now).
+     * Fetch occupations from O*NET API.
      *
      * @return array
      */
     public function fetchOccupations(): array
     {
-        // Mock data to simulate API response
+        if (empty($this->apiKey)) {
+            Log::warning('O*NET API Key not found, returning mock data.');
+            return $this->getMockOccupations();
+        }
+
+        try {
+            // Fetch general list of occupations
+            // Note: O*NET API might require individual calls for details (salary, outlook)
+            // For the seeder/batch fetch, we start with a list.
+            $response = Http::withHeaders([
+                'X-API-Key' => $this->apiKey,
+                'Accept' => 'application/json',
+            ])->get("{$this->baseUrl}online/occupations/");
+
+            if ($response->successful()) {
+                $occupations = $response->json()['occupation'] ?? [];
+                
+                return array_map(function ($occ) {
+                    // We might need to fetch more details per occupation if the list is sparse
+                    // For MVP, we'll try to get what we can. 
+                    // Usually, salary/outlook require specific endpoints per code.
+                    return [
+                        'code' => $occ['code'],
+                        'name' => $occ['title'],
+                        'description' => $occ['description'] ?? '',
+                        'median_salary' => 0, // Need detail call
+                        'job_outlook' => 'Average' // Need detail call
+                    ];
+                }, $occupations);
+            }
+
+            Log::error('O*NET API error: ' . $response->body());
+        } catch (\Exception $e) {
+            Log::error('O*NET API exception: ' . $e->getMessage());
+        }
+
+        return $this->getMockOccupations();
+    }
+
+    /**
+     * Fetch detailed data for a specific occupation.
+     */
+    public function fetchOccupationDetails(string $code): array
+    {
+        if (empty($this->apiKey)) {
+            return [];
+        }
+
+        try {
+            $response = Http::withHeaders([
+                'X-API-Key' => $this->apiKey,
+                'Accept' => 'application/json',
+            ])->get("{$this->baseUrl}online/occupations/{$code}/details");
+
+            if ($response->successful()) {
+                return $response->json();
+            }
+        } catch (\Exception $e) {
+            Log::error("O*NET Detail fetch failed for {$code}: " . $e->getMessage());
+        }
+
+        return [];
+    }
+
+    /**
+     * Mock data fallback.
+     */
+    private function getMockOccupations(): array
+    {
         return [
             [
                 'code' => '15-1252.00',

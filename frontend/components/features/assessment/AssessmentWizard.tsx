@@ -66,16 +66,23 @@ const AssessmentWizard = ({ majorId }: AssessmentWizardProps) => {
         }
     }, [user, isAuthenticated, authIsLoading, storeUserId, setStoreUserId, resetStore]);
 
-    // Handle deep dive vs tier1 transitions
+    // Handle deep dive vs tier1 transitions and resets
     useEffect(() => {
-        // If we have an assessmentId but it's for a different type, reset
-        // This is a simple way to ensure we don't mix modes
-        // In a real app we might want to check the assessment type from the backend
-        if (majorId && !assessmentId) {
-            // We are entering a deep dive from scratch
-            resetStore();
+        // If results exist but the majorId doesn't match the current mode, reset
+        // This prevents showing old Quick Assessment results on the Deep Dive page
+        if (results && results.length > 0) {
+            const isTier1Result = 'major_id' in results[0];
+            const isDeepDiveResult = 'occupation_id' in results[0] || 'specialization_id' in results[0];
+
+            if (majorId && isTier1Result) {
+                // We are on a Deep Dive page but showing Tier 1 results
+                resetStore();
+            } else if (!majorId && isDeepDiveResult) {
+                // We are on a Tier 1 page but showing Deep Dive results
+                resetStore();
+            }
         }
-    }, [majorId, assessmentId, resetStore]);
+    }, [majorId, results, resetStore]);
 
     useEffect(() => {
         const fetchQuestions = async () => {
@@ -215,7 +222,7 @@ const AssessmentWizard = ({ majorId }: AssessmentWizardProps) => {
 
                 <AnimatePresence mode="wait">
                     {results ? (
-                        results.length > 0 && 'specialization_id' in results[0] ? (
+                        results.length > 0 && ('specialization_id' in results[0] || 'occupation_id' in results[0]) ? (
                             <SpecializationResultsStep
                                 key="specialization-results"
                                 results={results as SpecializationResult[]}

@@ -20,7 +20,13 @@ class SkillController extends Controller
 
         if ($request->has('search')) {
             $searchTerm = $request->input('search');
-            $query->where('name', 'ilike', "%{$searchTerm}%");
+            $driver = $query->getConnection()->getDriverName();
+            if ($driver === 'pgsql') {
+                $query->where('name', 'ilike', "%{$searchTerm}%");
+            } else {
+                // SQLite is case-insensitive by default for LIKE on ASCII
+                $query->where('name', 'like', "%{$searchTerm}%");
+            }
         }
 
         if ($request->has('category')) {

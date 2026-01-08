@@ -47,8 +47,10 @@ export interface AssessmentResult {
 }
 
 export interface SpecializationResult {
-    specialization_id: number;
-    specialization: Specialization;
+    specialization_id?: number | null;
+    specialization?: Specialization | null;
+    occupation_id?: number | null;
+    occupation?: Occupation | null;
     match_percentage: number;
     scores: {
         interests: number;

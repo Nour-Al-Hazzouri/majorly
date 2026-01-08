@@ -77,6 +77,7 @@ export const SpecializationDetailModal: React.FC<SpecializationDetailModalProps>
         <AnimatePresence>
             {isOpen && (
                 <motion.div
+                    key="specialization-detail-modal"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
@@ -142,7 +143,7 @@ export const SpecializationDetailModal: React.FC<SpecializationDetailModalProps>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             {specialization.occupations.map((occ) => (
                                                 <div
-                                                    key={occ.id}
+                                                    key={`${occ.id}-${occ.code || occ.name}`}
                                                     onClick={() => handleCareerClick(occ)}
                                                     className="group p-6 rounded-2xl bg-slate-50 border border-slate-100 hover:border-blue-200 hover:bg-white hover:shadow-md transition-all cursor-pointer flex flex-col justify-between"
                                                 >
@@ -171,7 +172,7 @@ export const SpecializationDetailModal: React.FC<SpecializationDetailModalProps>
                                             <div className="flex flex-wrap gap-3">
                                                 {specialization.skills.map(skill => (
                                                     <Badge
-                                                        key={skill.id}
+                                                        key={`${skill.id}-${skill.name}`}
                                                         variant="secondary"
                                                         className="px-4 py-2 text-sm font-bold bg-white text-slate-700 border border-slate-100 shadow-sm"
                                                     >

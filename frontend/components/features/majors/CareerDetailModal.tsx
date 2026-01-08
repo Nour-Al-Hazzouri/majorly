@@ -72,14 +72,58 @@ export const CareerDetailModal: React.FC<CareerDetailModalProps> = ({ isOpen, on
         }).format(salary);
     };
 
-    // Group knowledge by type
-    const skills = career.onet_knowledge?.filter(k => k.type === 'Skill') || [];
-    const knowledge = career.onet_knowledge?.filter(k => k.type === 'Knowledge') || [];
+    // Group knowledge by type and sort by importance with a stable tie-break
+    const sortedKnowledge = (career.onet_knowledge || [])
+        .sort((a, b) => {
+            if (b.pivot.importance !== a.pivot.importance) {
+                return b.pivot.importance - a.pivot.importance;
+            }
+            return b.pivot.level - a.pivot.level || a.name.localeCompare(b.name);
+        });
+
+    const knowledgeItems = sortedKnowledge.filter(k => k.type === 'Knowledge');
+    const skillItems = sortedKnowledge.filter(k => k.type === 'Skill');
+
+    const renderSkillBar = (item: OnetKnowledge, index: number, colorClass: string, progressBarClass: string, bgClass: string) => {
+        const rawPercentage = item.pivot.importance * 20;
+        // Apply a visual decrement for items after the first 2 in a tie-break group to avoid "flat" visuals
+        // as requested by the user: "no more than 2 have the same percentage"
+        let displayPercentage = rawPercentage;
+
+        // Count how many preceding items in the sorted list have the same raw percentage
+        const precedingTies = sortedKnowledge
+            .filter(k => k.type === item.type)
+            .slice(0, index)
+            .filter(k => k.pivot.importance === item.pivot.importance).length;
+
+        if (precedingTies >= 2) {
+            // Apply 1% decrement for each tied item beyond the first 2
+            displayPercentage = Math.max(0, rawPercentage - (precedingTies - 1));
+        }
+
+        return (
+            <div key={`${item.id}-${item.name}-${index}`} className="space-y-2">
+                <div className="flex justify-between items-end">
+                    <span className="text-sm font-bold text-slate-700">{item.name}</span>
+                    <span className={cn("text-xs font-bold", colorClass)}>{displayPercentage.toFixed(0)}%</span>
+                </div>
+                <div className={cn("h-2 w-full rounded-full overflow-hidden", bgClass)}>
+                    <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${displayPercentage}%` }}
+                        transition={{ delay: 0.5, duration: 1 }}
+                        className={cn("h-full rounded-full", progressBarClass)}
+                    />
+                </div>
+            </div>
+        );
+    };
 
     return (
         <AnimatePresence>
             {isOpen && (
                 <motion.div
+                    key="career-detail-modal-overlay"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
@@ -155,7 +199,7 @@ export const CareerDetailModal: React.FC<CareerDetailModalProps> = ({ isOpen, on
                                             <div className="grid grid-cols-1 gap-4">
                                                 {parsedTasks.map((task: string, i: number) => (
                                                     <div
-                                                        key={i}
+                                                        key={`${career.id}-task-${i}`}
                                                         className="flex gap-4 p-5 rounded-2xl bg-slate-50 border border-slate-100 group hover:border-indigo-200 transition-colors"
                                                     >
                                                         <div className="mt-1 flex-shrink-0">
@@ -182,22 +226,7 @@ export const CareerDetailModal: React.FC<CareerDetailModalProps> = ({ isOpen, on
                                                 <h3 className="text-xl font-bold text-slate-900 tracking-tight">Knowledge Areas</h3>
                                             </div>
                                             <div className="space-y-4">
-                                                {knowledge.slice(0, 6).map((k) => (
-                                                    <div key={k.id} className="space-y-2">
-                                                        <div className="flex justify-between items-end">
-                                                            <span className="text-sm font-bold text-slate-700">{k.name}</span>
-                                                            <span className="text-xs font-bold text-amber-600">{(k.pivot.importance * 20).toFixed(0)}%</span>
-                                                        </div>
-                                                        <div className="h-2 w-full bg-amber-100 rounded-full overflow-hidden">
-                                                            <motion.div
-                                                                initial={{ width: 0 }}
-                                                                animate={{ width: `${k.pivot.importance * 20}%` }}
-                                                                transition={{ delay: 0.5, duration: 1 }}
-                                                                className="h-full bg-amber-500 rounded-full"
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                ))}
+                                                {knowledgeItems.slice(0, 6).map((k, idx) => renderSkillBar(k, idx, 'text-amber-600', 'bg-amber-500', 'bg-amber-100'))}
                                             </div>
                                         </section>
 
@@ -209,22 +238,7 @@ export const CareerDetailModal: React.FC<CareerDetailModalProps> = ({ isOpen, on
                                                 <h3 className="text-xl font-bold text-slate-900 tracking-tight">Core Abilities</h3>
                                             </div>
                                             <div className="space-y-4">
-                                                {skills.slice(0, 6).map((k) => (
-                                                    <div key={k.id} className="space-y-2">
-                                                        <div className="flex justify-between items-end">
-                                                            <span className="text-sm font-bold text-slate-700">{k.name}</span>
-                                                            <span className="text-xs font-bold text-emerald-600">{(k.pivot.importance * 20).toFixed(0)}%</span>
-                                                        </div>
-                                                        <div className="h-2 w-full bg-emerald-100 rounded-full overflow-hidden">
-                                                            <motion.div
-                                                                initial={{ width: 0 }}
-                                                                animate={{ width: `${k.pivot.importance * 20}%` }}
-                                                                transition={{ delay: 0.5, duration: 1 }}
-                                                                className="h-full bg-emerald-500 rounded-full"
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                ))}
+                                                {skillItems.slice(0, 6).map((k, idx) => renderSkillBar(k, idx, 'text-emerald-600', 'bg-emerald-500', 'bg-emerald-100'))}
                                             </div>
                                         </section>
                                     </div>

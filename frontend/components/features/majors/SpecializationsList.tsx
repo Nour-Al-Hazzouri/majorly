@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Layers, Zap, ArrowUpRight } from 'lucide-react';
+import { Layers, Zap, ArrowUpRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { SpecializationDetailModal } from './SpecializationDetailModal';
 
 interface Skill {
@@ -36,29 +37,48 @@ interface SpecializationsListProps {
 }
 
 export const SpecializationsList: React.FC<SpecializationsListProps> = ({ specializations }) => {
+    const [currentPage, setCurrentPage] = useState(1);
     const [selectedSpec, setSelectedSpec] = useState<Specialization | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const itemsPerPage = 6;
 
     if (!specializations || specializations.length === 0) return null;
+
+    const totalPages = Math.ceil(specializations.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const currentSpecs = specializations.slice(startIndex, startIndex + itemsPerPage);
 
     const handleSpecClick = (spec: Specialization) => {
         setSelectedSpec(spec);
         setIsModalOpen(true);
     };
 
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+        const element = document.getElementById('specializations-section');
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
+
     return (
-        <div className="space-y-6">
-            <div className="flex items-center gap-3">
-                <div className="p-2 bg-indigo-100 text-indigo-700 rounded-lg">
-                    <Layers className="w-5 h-5" />
+        <div id="specializations-section" className="space-y-6">
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                    <div className="p-2 bg-indigo-100 text-indigo-700 rounded-lg">
+                        <Layers className="w-5 h-5" />
+                    </div>
+                    <h2 className="text-2xl font-semibold text-slate-900">Specializations</h2>
                 </div>
-                <h2 className="text-2xl font-semibold text-slate-900">Specializations</h2>
+                <span className="text-sm text-slate-500 font-medium bg-slate-100 px-3 py-1 rounded-full">
+                    {specializations.length} Fields
+                </span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {specializations.map((spec) => (
+                {currentSpecs.map((spec) => (
                     <Card
-                        key={spec.id}
+                        key={`${spec.id}-${spec.name}`}
                         className="border-slate-200 shadow-sm hover:shadow-lg transition-all cursor-pointer group relative overflow-hidden"
                         onClick={() => handleSpecClick(spec)}
                     >
@@ -85,7 +105,7 @@ export const SpecializationsList: React.FC<SpecializationsListProps> = ({ specia
                                     </h4>
                                     <div className="flex flex-wrap gap-1.5">
                                         {spec.skills.slice(0, 4).map(skill => (
-                                            <Badge key={skill.id} variant="secondary" className="px-2 py-0.5 text-[10px] bg-slate-50 text-slate-600 border-slate-100">
+                                            <Badge key={`${skill.id}-${skill.name}`} variant="secondary" className="px-2 py-0.5 text-[10px] bg-slate-50 text-slate-600 border-slate-100">
                                                 {skill.name}
                                             </Badge>
                                         ))}
@@ -117,6 +137,33 @@ export const SpecializationsList: React.FC<SpecializationsListProps> = ({ specia
                     </Card>
                 ))}
             </div>
+
+            {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-4 mt-8">
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        className="rounded-xl border-slate-200 hover:bg-slate-50 hover:text-slate-900"
+                        onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+                        disabled={currentPage === 1}
+                    >
+                        <ChevronLeft className="w-5 h-5" />
+                    </Button>
+                    <div className="flex items-center gap-2">
+                        <span className="text-sm font-semibold text-slate-900">Page {currentPage}</span>
+                        <span className="text-sm text-slate-400">of {totalPages}</span>
+                    </div>
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        className="rounded-xl border-slate-200 hover:bg-slate-50 hover:text-slate-900"
+                        onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
+                        disabled={currentPage === totalPages}
+                    >
+                        <ChevronRight className="w-5 h-5" />
+                    </Button>
+                </div>
+            )}
 
             <SpecializationDetailModal
                 isOpen={isModalOpen}

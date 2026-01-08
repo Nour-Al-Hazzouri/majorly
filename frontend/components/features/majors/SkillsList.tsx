@@ -30,7 +30,7 @@ export const SkillsList: React.FC<SkillsListProps> = ({ skills }) => {
                     <div className="flex flex-wrap gap-2">
                         {technicalSkills.map((skill) => (
                             <Badge
-                                key={skill.id}
+                                key={`${skill.id}-${skill.name}`}
                                 variant="secondary"
                                 className="px-3 py-1 text-sm font-medium bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200"
                             >
@@ -48,7 +48,7 @@ export const SkillsList: React.FC<SkillsListProps> = ({ skills }) => {
                     <div className="flex flex-wrap gap-2">
                         {softSkills.map((skill) => (
                             <Badge
-                                key={skill.id}
+                                key={`${skill.id}-${skill.name}`}
                                 variant="outline"
                                 className="px-3 py-1 text-sm font-medium bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border-emerald-200"
                             >

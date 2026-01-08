@@ -66,7 +66,7 @@ export const CareerPaths: React.FC<CareerPathsProps> = ({ occupations }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {currentOccupations.map((occupation) => (
                     <Card
-                        key={occupation.id}
+                        key={`${occupation.id}-${occupation.code || occupation.name}`}
                         className="group hover:border-blue-500/50 hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 bg-white border-slate-200 cursor-pointer relative overflow-hidden flex flex-col"
                         onClick={() => handleCareerClick(occupation)}
                     >

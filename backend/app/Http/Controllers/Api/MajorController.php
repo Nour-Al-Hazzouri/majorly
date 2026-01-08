@@ -47,7 +47,7 @@ class MajorController extends Controller
     public function show(string $slug)
     {
         $major = Major::where('slug', $slug)
-            ->with(['skills', 'occupations'])
+            ->with(['skills', 'occupations', 'specializations.skills', 'specializations.occupations'])
             ->firstOrFail();
 
         return response()->json($major);

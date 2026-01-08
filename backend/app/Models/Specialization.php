@@ -25,4 +25,9 @@ class Specialization extends Model
     {
         return $this->belongsToMany(Occupation::class);
     }
+
+    public function skills()
+    {
+        return $this->belongsToMany(Skill::class);
+    }
 }

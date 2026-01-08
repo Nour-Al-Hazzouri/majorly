@@ -42,7 +42,8 @@ class ImportOpenData extends Command
             $this->info("Success! 'Truth' data imported.");
         } catch (\Exception $e) {
             DB::rollBack();
-            $this->error("Error: " . $e->getMessage());
+            $this->error("\nFATAL ERROR: " . $e->getMessage());
+            echo "FILE: " . $e->getFile() . " ON LINE: " . $e->getLine() . "\n";
             $this->error($e->getTraceAsString());
         }
     }
@@ -231,7 +232,6 @@ class ImportOpenData extends Command
             $socTasks = $this->parseTasks($onetPath);
         }
         
-        // SOC Major Groups (First 2 digits) mapped to human-readable names
         $socMajorGroups = [
             '11' => 'Management',
             '13' => 'Business and Financial Operations',
@@ -257,8 +257,46 @@ class ImportOpenData extends Command
             '53' => 'Transportation and Material Moving',
             '55' => 'Military Specific',
         ];
+
+        $specializationNames = [
+            '11-1' => 'Executive Management',
+            '11-2' => 'Marketing & Sales Management',
+            '11-3' => 'Operations & Administrative Management',
+            '11-9' => 'Specialized Field Management',
+            '13-1' => 'Business Operations',
+            '13-2' => 'Financial Operations',
+            '15-1' => 'Computer & Information Technology',
+            '15-2' => 'Mathematical Science',
+            '17-1' => 'Architecture & Surveying',
+            '17-2' => 'Engineering Specialists',
+            '17-3' => 'Drafting & Engineering Technology',
+            '19-1' => 'Life Sciences',
+            '19-2' => 'Physical Sciences',
+            '19-3' => 'Social Sciences',
+            '19-4' => 'Life & Physical Science Technology',
+            '19-5' => 'Social Science Research',
+            '21-1' => 'Counseling & Social Service',
+            '21-2' => 'Religious Occupations',
+            '23-1' => 'Legal Professionals',
+            '23-2' => 'Legal Support',
+            '25-1' => 'Postsecondary Education',
+            '25-2' => 'Primary & Secondary Education',
+            '25-3' => 'Specialized Instruction',
+            '25-4' => 'Librarians & Archivists',
+            '25-9' => 'Education Support',
+            '27-1' => 'Art & Design',
+            '27-2' => 'Entertainment & Sports',
+            '27-3' => 'Media & Communications',
+            '27-4' => 'Media Production',
+            '29-1' => 'Health Diagnosing & Treating Practitioners',
+            '29-2' => 'Health Technologists & Technicians',
+            '29-9' => 'Other Healthcare Practitioners',
+            '31-1' => 'Nursing & Medical Support',
+            '31-2' => 'Occupational & Physical Therapy Assistants',
+            '31-9' => 'Other Healthcare Support',
+            // ... add more as needed, or fallback to generic
+        ];
         
-        // 1. Create Majors from SOC Major Groups
         foreach ($socMajorGroups as $code => $name) {
             $slug = \Illuminate\Support\Str::slug($name);
             
@@ -266,7 +304,7 @@ class ImportOpenData extends Command
                 ['slug' => $slug],
                 [
                     'name' => $name,
-                    'cip_code' => $code, // Store SOC prefix as cip_code
+                    'cip_code' => $code,
                     'description' => "Occupations in the $name field.",
                     'category' => $this->categorizeByCode($code),
                     'ideal_interests' => json_encode($this->getIdealInterests($this->categorizeByCode($code))),
@@ -274,14 +312,27 @@ class ImportOpenData extends Command
                 ]
             );
             
-            // 2. Find all occupations in this SOC group
             $occupations = DB::table('onet_occupations')
                 ->where('soc_code', 'like', $code . '-%')
                 ->get();
             
+            $this->info("\nProcessing Major: $name (" . $occupations->count() . " occupations)");
             $this->output->progressStart($occupations->count());
             
             foreach ($occupations as $onet) {
+                // Determine Specialization (Broad Group XX-X)
+                $specPrefix = substr($onet->soc_code, 0, 4);
+                $specName = $specializationNames[$specPrefix] ?? ($name . " - " . (explode(' ', $onet->title)[0]) . " Professionals");
+                $specSlug = \Illuminate\Support\Str::slug($specName);
+                
+                $specialization = Specialization::updateOrCreate(
+                    ['slug' => $specSlug, 'major_id' => $major->id],
+                    [
+                        'name' => $specName,
+                        'description' => "Advanced roles in $specName within the $name major."
+                    ]
+                );
+
                 $occupation = Occupation::updateOrCreate(
                     ['soc_code' => $onet->soc_code],
                     [
@@ -296,11 +347,14 @@ class ImportOpenData extends Command
                 // Link Major -> Occupation
                 $major->occupations()->syncWithoutDetaching([$occupation->id]);
                 
-                // 3. Link Skills for this Occupation (top 8 by importance)
+                // Link Specialization -> Occupation
+                $specialization->occupations()->syncWithoutDetaching([$occupation->id]);
+                
+                // 3. Link Skills and avoid duplicates
                 $topSkills = DB::table('onet_occupation_knowledge')
                     ->where('soc_code', $onet->soc_code)
                     ->orderByDesc('importance')
-                    ->limit(8)
+                    ->limit(10)
                     ->get();
                     
                 foreach ($topSkills as $s) {
@@ -313,12 +367,19 @@ class ImportOpenData extends Command
                         ['name' => $def->name],
                         ['category' => $category]
                     );
-                    if ($s->importance >= 3.5) {
+
+                    // Link to Major if importance is high
+                    if ($s->importance >= 3.8) {
                         $major->skills()->syncWithoutDetaching([$skill->id]);
+                    }
+
+                    // Link to Specialization
+                    if ($s->importance >= 3.5) {
+                        $specialization->skills()->syncWithoutDetaching([$skill->id]);
                     }
                 }
 
-                // 4. Link Tech Skills for this Occupation (Hot Tech first, limit 5)
+                // 4. Tech Skills
                 $techSkills = DB::table('onet_occupation_tech_skills')
                     ->where('soc_code', $onet->soc_code)
                     ->orderByDesc('hot_tech')
@@ -331,16 +392,15 @@ class ImportOpenData extends Command
                         ['category' => 'Technical Skill']
                     );
                     
-                    // Always link Hot Tech to Major if it's relevant
                     if ($ts->hot_tech) {
                         $major->skills()->syncWithoutDetaching([$skill->id]);
+                        $specialization->skills()->syncWithoutDetaching([$skill->id]);
                     }
                 }
 
                 $this->output->progressAdvance();
             }
             $this->output->progressFinish();
-            $this->info("Created Major: $name with {$occupations->count()} occupations");
         }
     }
 

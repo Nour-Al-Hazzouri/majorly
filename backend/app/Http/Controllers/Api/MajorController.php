@@ -49,7 +49,32 @@ class MajorController extends Controller
     public function show(string $slug)
     {
         $major = Major::where('slug', $slug)
-            ->with(['skills', 'occupations', 'specializations.skills', 'specializations.occupations'])
+            ->with([
+                'skills',
+                'occupations' => function($q) {
+                    $q->select('occupations.id', 'occupations.name', 'occupations.code', 'occupations.soc_code', 'occupations.description', 'occupations.median_salary', 'occupations.job_outlook', 'occupations.tasks');
+                },
+                'occupations.techSkills' => function($q) {
+                    $q->select('id', 'soc_code', 'skill_name', 'hot_tech')->limit(15);
+                },
+                'occupations.onetKnowledge' => function($q) {
+                    $q->select('onet_knowledge.id', 'onet_knowledge.name', 'onet_knowledge.type')
+                      ->withPivot('importance', 'level')
+                      ->orderBy('importance', 'desc');
+                },
+                'specializations.skills',
+                'specializations.occupations' => function($q) {
+                    $q->select('occupations.id', 'occupations.name', 'occupations.code', 'occupations.soc_code', 'occupations.description', 'occupations.median_salary', 'occupations.job_outlook', 'occupations.tasks');
+                },
+                'specializations.occupations.techSkills' => function($q) {
+                    $q->select('id', 'soc_code', 'skill_name', 'hot_tech')->limit(15);
+                },
+                'specializations.occupations.onetKnowledge' => function($q) {
+                    $q->select('onet_knowledge.id', 'onet_knowledge.name', 'onet_knowledge.type')
+                      ->withPivot('importance', 'level')
+                      ->orderBy('importance', 'desc');
+                }
+            ])
             ->firstOrFail();
 
         return response()->json($major);

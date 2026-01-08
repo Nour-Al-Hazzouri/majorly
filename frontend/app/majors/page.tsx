@@ -89,7 +89,21 @@ export default function MajorsPage() {
                 <div className="max-w-7xl mx-auto px-6 py-12 md:py-16">
                     <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                         <div className="space-y-4">
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-100">
+                            <div className="flex items-center gap-4">
+                                <Button
+                                    variant="ghost"
+                                    className="p-0 hover:bg-transparent group"
+                                    asChild
+                                >
+                                    <a href="/dashboard" className="flex items-center gap-2 text-slate-500 hover:text-slate-900 transition-colors">
+                                        <div className="p-2 rounded-xl bg-slate-100 group-hover:bg-slate-200 transition-colors">
+                                            <ChevronLeft className="w-4 h-4" />
+                                        </div>
+                                        <span className="text-sm font-semibold">Back to Dashboard</span>
+                                    </a>
+                                </Button>
+                            </div>
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-100 mt-4">
                                 <Sparkles className="w-4 h-4 text-blue-600" />
                                 <span className="text-xs font-semibold text-blue-700 uppercase tracking-wider">Explore Majors</span>
                             </div>
@@ -102,11 +116,13 @@ export default function MajorsPage() {
                         </div>
                     </div>
 
-                    <div className="relative w-full max-w-2xl mx-auto">
+                    <div className="mt-12 relative w-full max-w-2xl mx-auto">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                         <Input
                             placeholder="Search majors by name or keyword..."
                             className="pl-12 h-14 rounded-2xl border-slate-200 focus:ring-blue-600 text-lg shadow-sm"
+                            value={searchTerm}
+                            onChange={handleSearchChange}
                         />
                     </div>
                 </div>
@@ -114,78 +130,76 @@ export default function MajorsPage() {
 
             {/* Grid Section */}
             <section className="max-w-7xl mx-auto px-6 py-12">
-                {
-                    loading ? (
-                        <div className="flex flex-col items-center justify-center py-24 space-y-4" >
-                            <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
-                            <p className="text-slate-500 font-medium font-sans">Finding the best matches for you...</p>
+                {loading ? (
+                    <div className="flex flex-col items-center justify-center py-24 space-y-4">
+                        <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
+                        <p className="text-slate-500 font-medium font-sans">Finding the best matches for you...</p>
+                    </div>
+                ) : majors.length > 0 ? (
+                    <>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-in fade-in duration-500">
+                            {majors.map((major) => (
+                                <MajorCard
+                                    key={major.id}
+                                    name={major.name}
+                                    slug={major.slug}
+                                    category={major.category}
+                                    description={major.description}
+                                />
+                            ))}
                         </div>
-                    ) : majors.length > 0 ? (
-                        <>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-in fade-in duration-500">
-                                {majors.map((major) => (
-                                    <MajorCard
-                                        key={major.id}
-                                        name={major.name}
-                                        slug={major.slug}
-                                        category={major.category}
-                                        description={major.description}
-                                    />
-                                ))}
-                            </div>
 
-                            {/* Pagination */}
-                            {pagination.last_page > 1 && (
-                                <div className="mt-16 flex items-center justify-center gap-4">
-                                    <Button
-                                        variant="outline"
-                                        size="icon"
-                                        className="rounded-xl"
-                                        disabled={pagination.current_page === 1}
-                                        onClick={() => handlePageChange(pagination.current_page - 1)}
-                                    >
-                                        <ChevronLeft className="w-5 h-5" />
-                                    </Button>
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-sm font-semibold text-slate-900">Page {pagination.current_page}</span>
-                                        <span className="text-sm text-slate-400">of {pagination.last_page}</span>
-                                    </div>
-                                    <Button
-                                        variant="outline"
-                                        size="icon"
-                                        className="rounded-xl"
-                                        disabled={pagination.current_page === pagination.last_page}
-                                        onClick={() => handlePageChange(pagination.current_page + 1)}
-                                    >
-                                        <ChevronRight className="w-5 h-5" />
-                                    </Button>
+                        {/* Pagination */}
+                        {pagination.last_page > 1 && (
+                            <div className="mt-16 flex items-center justify-center gap-4">
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className="rounded-xl"
+                                    disabled={pagination.current_page === 1}
+                                    onClick={() => handlePageChange(pagination.current_page - 1)}
+                                >
+                                    <ChevronLeft className="w-5 h-5" />
+                                </Button>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-sm font-semibold text-slate-900">Page {pagination.current_page}</span>
+                                    <span className="text-sm text-slate-400">of {pagination.last_page}</span>
                                 </div>
-                            )}
-                        </>
-                    ) : (
-                        <div className="text-center py-24 space-y-4">
-                            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-slate-50 text-slate-300">
-                                <Search className="w-10 h-10" />
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className="rounded-xl"
+                                    disabled={pagination.current_page === pagination.last_page}
+                                    onClick={() => handlePageChange(pagination.current_page + 1)}
+                                >
+                                    <ChevronRight className="w-5 h-5" />
+                                </Button>
                             </div>
-                            <h3 className="text-2xl font-bold text-slate-900">No majors found</h3>
-                            <p className="text-slate-500 max-w-sm mx-auto">
-                                We couldn't find any majors matching your current filters. Try searching for something else or clearing your filters.
-                            </p>
-                            <Button
-                                variant="link"
-                                className="text-blue-600 font-semibold"
-                                onClick={() => {
-                                    setSearchTerm('');
-                                    setSelectedCategory('All');
-                                    fetchMajors(1, '', 'All');
-                                }}
-                            >
-                                Clear all filters
-                            </Button>
+                        )}
+                    </>
+                ) : (
+                    <div className="text-center py-24 space-y-4">
+                        <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-slate-50 text-slate-300">
+                            <Search className="w-10 h-10" />
                         </div>
-                    )
-                }
-            </section >
-        </div >
+                        <h3 className="text-2xl font-bold text-slate-900">No majors found</h3>
+                        <p className="text-slate-500 max-w-sm mx-auto">
+                            We couldn't find any majors matching your current filters. Try searching for something else or clearing your filters.
+                        </p>
+                        <Button
+                            variant="link"
+                            className="text-blue-600 font-semibold"
+                            onClick={() => {
+                                setSearchTerm('');
+                                setSelectedCategory('All');
+                                fetchMajors(1, '', 'All');
+                            }}
+                        >
+                            Clear all filters
+                        </Button>
+                    </div>
+                )}
+            </section>
+        </div>
     );
 }

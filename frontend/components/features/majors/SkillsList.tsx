@@ -21,7 +21,7 @@ export const SkillsList: React.FC<SkillsListProps> = ({ skills }) => {
 
     return (
         <div className="space-y-6">
-            <h2 className="text-2xl font-semibold text-slate-900">Required Skills</h2>
+            <h2 className="text-2xl font-semibold text-slate-900">Possible Skills (Based on chosen specialization)</h2>
 
             {/* Technical Skills */}
             {technicalSkills.length > 0 && (

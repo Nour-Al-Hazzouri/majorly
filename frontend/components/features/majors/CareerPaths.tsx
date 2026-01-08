@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { TrendingUp, DollarSign, ChevronLeft, ChevronRight } from 'lucide-react';
+import { TrendingUp, DollarSign, ChevronLeft, ChevronRight, ArrowUpRight } from 'lucide-react';
+import { CareerDetailModal } from './CareerDetailModal';
 
 interface Occupation {
     id: number;
@@ -11,6 +12,9 @@ interface Occupation {
     description: string;
     median_salary: number;
     job_outlook: string;
+    tasks: string[] | string | null;
+    tech_skills?: any[];
+    onet_knowledge?: any[];
 }
 
 interface CareerPathsProps {
@@ -19,6 +23,8 @@ interface CareerPathsProps {
 
 export const CareerPaths: React.FC<CareerPathsProps> = ({ occupations }) => {
     const [currentPage, setCurrentPage] = useState(1);
+    const [selectedCareer, setSelectedCareer] = useState<Occupation | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const itemsPerPage = 9;
 
     if (!occupations || occupations.length === 0) return null;
@@ -37,11 +43,15 @@ export const CareerPaths: React.FC<CareerPathsProps> = ({ occupations }) => {
 
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
-        // Optional: scroll to top of section
         const element = document.getElementById('career-paths');
         if (element) {
             element.scrollIntoView({ behavior: 'smooth' });
         }
+    };
+
+    const handleCareerClick = (occupation: Occupation) => {
+        setSelectedCareer(occupation);
+        setIsModalOpen(true);
     };
 
     return (
@@ -55,38 +65,43 @@ export const CareerPaths: React.FC<CareerPathsProps> = ({ occupations }) => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {currentOccupations.map((occupation) => (
-                    <Card key={occupation.id} className="group hover:border-blue-500/30 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 bg-white border-slate-200">
+                    <Card
+                        key={occupation.id}
+                        className="group hover:border-blue-500/50 hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 bg-white border-slate-200 cursor-pointer relative overflow-hidden flex flex-col"
+                        onClick={() => handleCareerClick(occupation)}
+                    >
+                        <div className="absolute top-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="p-1.5 rounded-lg bg-blue-50 text-blue-600">
+                                <ArrowUpRight className="w-4 h-4" />
+                            </div>
+                        </div>
+
                         <CardHeader className="pb-3 space-y-3">
-                            <div className="flex justify-between items-start gap-4">
+                            <div className="flex justify-between items-start gap-4 pr-6">
                                 <CardTitle className="text-lg font-bold text-slate-900 group-hover:text-blue-600 transition-colors leading-snug line-clamp-2 min-h-[3rem]">
                                     {occupation.name}
                                 </CardTitle>
-                                {!occupation.code.startsWith('http') && (
-                                    <Badge variant="outline" className="text-[10px] font-mono shrink-0 bg-slate-50 text-slate-500">
-                                        {occupation.code}
-                                    </Badge>
-                                )}
                             </div>
-                            <CardDescription className="line-clamp-3 text-sm leading-relaxed">
+                            <CardDescription className="line-clamp-3 text-sm leading-relaxed text-slate-500 font-medium">
                                 {occupation.description}
                             </CardDescription>
                         </CardHeader>
-                        <CardContent>
-                            <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
+                        <CardContent className="mt-auto">
+                            <div className="pt-4 border-t border-slate-100 flex flex-col gap-3">
                                 <div className="flex items-center justify-between text-sm">
-                                    <span className="text-slate-500 flex items-center gap-1.5">
-                                        <DollarSign className="w-4 h-4 text-green-600" />
+                                    <span className="text-slate-400 font-medium flex items-center gap-1.5">
+                                        <DollarSign className="w-4 h-4 text-emerald-500" />
                                         Median Salary
                                     </span>
-                                    <span className="font-semibold text-slate-900">{formatSalary(occupation.median_salary)}</span>
+                                    <span className="font-bold text-slate-900">{formatSalary(occupation.median_salary)}</span>
                                 </div>
                                 {occupation.job_outlook && (
                                     <div className="flex items-center justify-between text-sm">
-                                        <span className="text-slate-500 flex items-center gap-1.5">
-                                            <TrendingUp className="w-4 h-4 text-blue-600" />
+                                        <span className="text-slate-400 font-medium flex items-center gap-1.5">
+                                            <TrendingUp className="w-4 h-4 text-blue-500" />
                                             Outlook
                                         </span>
-                                        <span className="font-medium text-blue-700 bg-blue-50 px-2 py-0.5 rounded text-xs">
+                                        <span className="font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md text-[10px] uppercase tracking-wider">
                                             {occupation.job_outlook}
                                         </span>
                                     </div>
@@ -123,6 +138,12 @@ export const CareerPaths: React.FC<CareerPathsProps> = ({ occupations }) => {
                     </Button>
                 </div>
             )}
+
+            <CareerDetailModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                career={selectedCareer}
+            />
         </div>
     );
 };

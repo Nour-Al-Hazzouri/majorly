@@ -11,6 +11,8 @@ class Specialization extends Model
 
     protected $fillable = ['major_id', 'name', 'slug', 'description', 'ideal_interests', 'ideal_strengths'];
 
+    protected $hidden = ['major'];
+
     protected $casts = [
         'ideal_interests' => 'array',
         'ideal_strengths' => 'array',

@@ -23,8 +23,10 @@ class MajorController extends Controller
         // Search filtering
         if ($request->has('search')) {
             $search = $request->query('search');
-            $query->where('name', 'like', "%{$search}%")
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
                   ->orWhere('description', 'like', "%{$search}%");
+            });
         }
 
         // Category filtering

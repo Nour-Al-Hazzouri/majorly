@@ -274,8 +274,12 @@ class ImportOpenData extends Command
                         ['category' => $category]
                     );
                     
-                    // Attach to Major (Cumulative skills)
-                    $major->skills()->syncWithoutDetaching([$skill->id]);
+                    // Attach to Major ONLY if importance >= 3.5 (high importance)
+                    // This filters out niche skills like Biology in Computer major
+                    // while keeping them available for specific occupations like Bioinformatics
+                    if ($s->importance >= 3.5) {
+                        $major->skills()->syncWithoutDetaching([$skill->id]);
+                    }
                 }
                 $this->output->progressAdvance();
             }

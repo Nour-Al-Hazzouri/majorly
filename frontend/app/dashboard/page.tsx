@@ -74,7 +74,7 @@ export default function DashboardPage() {
                                     className="h-full bg-indigo-500"
                                 />
                             </div>
-                            <p className="text-xs text-slate-400 mt-2">{primaryMatch.affinity}% Match Score</p>
+                            <p className="text-xs text-slate-400 mt-2">{Number(primaryMatch.affinity).toFixed(1)}% Match Score</p>
                         </motion.div>
                     ) : (
                         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col items-center justify-center text-center">
@@ -147,7 +147,7 @@ export default function DashboardPage() {
                                         <div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto pl-16 sm:pl-0">
                                             {assessment.score > 0 && (
                                                 <div className="text-right">
-                                                    <span className="block text-2xl font-black text-slate-900">{assessment.score}%</span>
+                                                    <span className="block text-2xl font-black text-slate-900">{Number(assessment.score).toFixed(1)}%</span>
                                                     <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Match</span>
                                                 </div>
                                             )}

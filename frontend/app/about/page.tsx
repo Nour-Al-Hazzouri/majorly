@@ -174,7 +174,8 @@ export default function AboutPage() {
                         </a>
                     </div>
                     <p className="mt-12 text-sm text-slate-500 max-w-2xl mx-auto">
-                        All career data, salary information, and skill taxonomies are sourced directly from these open standards to ensure accuracy and relevance.
+                        All career data, salary information, and skill taxonomies are sourced from these open standards to ensure matching relevance.
+                        <strong> Note:</strong> Majorly is not affiliated with O*NET, the SOC, or any government agency. This project only uses their publicly accessible data to provide educational insights.
                     </p>
                 </div>
             </section>

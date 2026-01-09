@@ -138,7 +138,11 @@ class AssessmentController extends Controller
         
         return response()->json([
             'message' => 'Assessment submitted successfully. Results processed.',
-            'assessment' => $assessment->load('results.major'),
+            'assessment' => $assessment->load(['results.major' => function($q) {
+                $q->with(['skills' => function($sq) {
+                    $sq->limit(10);
+                }]);
+            }]),
             'recommendations' => $recommendations
         ]);
     }
@@ -171,7 +175,11 @@ class AssessmentController extends Controller
         }
 
         $assessment->load([
-            'results.major',
+            'results.major' => function($q) {
+                $q->with(['skills' => function($sq) {
+                    $sq->limit(10);
+                }]);
+            },
             'results.specialization.occupations',
             'results.occupation'
         ]);

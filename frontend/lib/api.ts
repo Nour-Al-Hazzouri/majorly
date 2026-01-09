@@ -17,6 +17,8 @@ export const getCsrfCookie = () => api.get('/sanctum/csrf-cookie');
 export const getMajors = (params?: { search?: string, category?: string, page?: number }) =>
     api.get('/api/majors', { params });
 export const getMajorBySlug = (slug: string) => api.get(`/api/majors/${slug}`);
+export const getMajorSkills = (majorId: number, params?: { page?: number, per_page?: number }) =>
+    api.get(`/api/majors/${majorId}/skills`, { params });
 
 export default api;
 

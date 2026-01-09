@@ -132,7 +132,7 @@ function MajorResultCard({ result, index }: { result: AssessmentResult; index: n
                         <div className="flex items-center justify-between w-full md:w-auto gap-4 md:gap-6 mt-4 md:mt-0 pl-16 md:pl-0">
                             <div className="text-left md:text-right">
                                 <span className="text-2xl md:text-3xl font-black text-[#4F46E5]">
-                                    {Math.round(result.match_percentage)}%
+                                    {Number(result.match_percentage).toFixed(1)}%
                                 </span>
                                 <p className="text-[10px] font-bold text-[#64748b] uppercase tracking-wider">Match Score</p>
                             </div>

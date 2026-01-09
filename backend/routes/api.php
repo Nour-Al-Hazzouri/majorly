@@ -23,6 +23,7 @@ Route::post('/assessments/{assessment}/submit', [AssessmentController::class, 's
 // Major Details
 Route::get('/majors', [\App\Http\Controllers\Api\MajorController::class, 'index']);
 Route::get('/majors/{slug}', [\App\Http\Controllers\Api\MajorController::class, 'show']);
+Route::get('/majors/{major}/skills', [\App\Http\Controllers\Api\MajorController::class, 'skills']);
 
 // Protected Routes
 Route::middleware('auth:sanctum')->group(function () {

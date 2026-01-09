@@ -1,12 +1,8 @@
 [build]
   command = "pnpm run build"
-  publish = ".next"
-
-[context.production]
-  command = "pnpm run build"
-
-[context.deploy-preview]
-  command = "pnpm run build"
+  ## publish directory is automatically detected by Next.js Runtime
+  
+  environment = { NPM_FLAGS = "--no-audit" }
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"

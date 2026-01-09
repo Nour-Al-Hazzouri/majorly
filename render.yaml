@@ -1,10 +1,10 @@
 services:
   - type: web
     name: majorly-backend
-    env: php
+    runtime: docker
     plan: free
-    buildCommand: composer install --no-dev --optimize-autoloader && pnpm install && pnpm run build
-    startCommand: php artisan serve --host=0.0.0.0 --port=$PORT
+    rootDir: backend
+    dockerfilePath: Dockerfile
     envVars:
       - key: APP_NAME
         value: Majorly
@@ -16,4 +16,6 @@ services:
         generateValue: true
       - key: APP_URL
         sync: false
-    region: ohio # You can change this to 'oregon', 'frankfurt', or 'singapore'
+      - key: DB_CONNECTION
+        value: pgsql
+    region: ohio

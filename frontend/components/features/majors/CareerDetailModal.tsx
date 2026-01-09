@@ -349,20 +349,7 @@ export const CareerDetailModal: React.FC<CareerDetailModalProps> = ({ isOpen, on
                                         </section>
                                     )}
 
-                                    {/* Helpful Links/Ad */}
-                                    <div className="p-8 rounded-3xl bg-blue-50 border border-blue-100 group cursor-pointer hover:bg-blue-100 transition-colors">
-                                        <div className="flex items-center gap-2 text-blue-600 mb-3">
-                                            <Globe className="w-4 h-4" />
-                                            <span className="text-xs font-bold uppercase tracking-widest">External Data</span>
-                                        </div>
-                                        <h4 className="text-slate-900 font-bold mb-2 flex items-center gap-2 group-hover:text-blue-700">
-                                            View on O*NET Online
-                                            <ExternalLink className="w-4 h-4" />
-                                        </h4>
-                                        <p className="text-sm text-slate-500 leading-relaxed">
-                                            Get even deeper insights and data about this specific career directly from the US Department of Labor.
-                                        </p>
-                                    </div>
+
                                 </div>
                             </div>
                         </ScrollArea>

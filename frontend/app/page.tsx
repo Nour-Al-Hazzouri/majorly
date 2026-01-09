@@ -142,13 +142,26 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Trust Section */}
-      <section className="bg-white/40 py-16 border-y border-white/50">
-        <div className="max-w-7xl mx-auto px-6 flex flex-wrap justify-center items-center gap-12 opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
-          <span className="text-2xl font-black text-slate-800">FORBES</span>
-          <span className="text-2xl font-black text-slate-800">TECHCRUNCH</span>
-          <span className="text-2xl font-black text-slate-800">GAZEETE</span>
-          <span className="text-2xl font-black text-slate-800">WIRED</span>
+      {/* Quote Section */}
+      <section className="bg-white/40 py-24 border-y border-white/50 overflow-hidden relative">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full opacity-[0.03] pointer-events-none">
+          <Sparkles className="w-full h-full" />
+        </div>
+        <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+          >
+            <span className="text-6xl font-serif text-[#4F46E5]/20 leading-none">"</span>
+            <blockquote className="text-2xl md:text-3xl font-medium text-slate-800 leading-relaxed mb-8 -mt-6">
+              The only way to do great work is to love what you do. If you haven't found it yet, keep looking. Don't settle.
+            </blockquote>
+            <cite className="text-lg font-bold bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] bg-clip-text text-transparent not-italic">
+              Steve Jobs
+            </cite>
+          </motion.div>
         </div>
       </section>
 

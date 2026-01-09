@@ -62,6 +62,57 @@ class OnetService
     }
 
     /**
+     * Fetch O*NET-SOC occupations linked to a CIP code.
+     */
+    public function getOccupationsByCip(string $cip): array
+    {
+        if (empty($this->apiKey)) {
+            return [];
+        }
+
+        try {
+            $response = Http::withHeaders([
+                'X-API-Key' => $this->apiKey,
+                'Accept' => 'application/json',
+            ])->get("{$this->baseUrl}online/crosswalks/education/{$cip}");
+
+            if ($response->successful()) {
+                return $response->json()['occupation'] ?? [];
+            }
+        } catch (\Exception $e) {
+            Log::error("O*NET CIP crosswalk fetch failed for {$cip}: " . $e->getMessage());
+        }
+
+        return [];
+    }
+
+    /**
+     * Fetch skill ratings for a specific occupation.
+     */
+    public function fetchOccupationSkills(string $code): array
+    {
+        if (empty($this->apiKey)) {
+            return [];
+        }
+
+        try {
+            // Fetch the 'Skills' report for the occupation
+            $response = Http::withHeaders([
+                'X-API-Key' => $this->apiKey,
+                'Accept' => 'application/json',
+            ])->get("{$this->baseUrl}online/occupations/{$code}/details/skills");
+
+            if ($response->successful()) {
+                return $response->json()['skill'] ?? [];
+            }
+        } catch (\Exception $e) {
+            Log::error("O*NET Skills fetch failed for {$code}: " . $e->getMessage());
+        }
+
+        return [];
+    }
+
+    /**
      * Fetch detailed data for a specific occupation.
      */
     public function fetchOccupationDetails(string $code): array

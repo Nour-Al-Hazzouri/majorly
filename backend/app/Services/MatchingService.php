@@ -19,19 +19,21 @@ class MatchingService
     public function generateRecommendations(Assessment $assessment): Collection
     {
         $responses = $assessment->responses()->pluck('response_value', 'question_id');
-        $majors = Major::with('skills')->get();
+        $majors = Major::with(['skills', 'occupations.onetSkills'])->get();
 
         $results = $majors->map(function (Major $major) use ($responses) {
-            $skillScore = $this->calculateSkillScore($major, $responses);
+            $skillScore = $this->calculateVectorSkillScore($major, $responses);
             $interestScore = $this->calculateRatingScore($major->ideal_interests ?? [], $responses['interests'] ?? []);
             $strengthScore = $this->calculateRatingScore($major->ideal_strengths ?? [], $responses['strengths_weaknesses'] ?? []);
 
-            // Weighting: 50% Skills, 30% Interests, 20% Strengths
-            $matchPercentage = ($skillScore * 0.5) + ($interestScore * 0.3) + ($strengthScore * 0.2);
+            // Add microscopic entropy for sub-score uniqueness (deterministic based on major ID)
+            $subEntropy = ($major->id % 1000) * 0.00001;
+            $skillScore = round($skillScore + $subEntropy, 4);
+            $interestScore = round($interestScore + $subEntropy, 4);
+            $strengthScore = round($strengthScore + $subEntropy, 4);
 
-            // Tie-breaker: Add a tiny bit of deterministic variance based on ID (to avoid exactly 20% for everyone if scores are flat)
-            // This ensures we always have a clear ranking.
-            $matchPercentage += ($major->id % 100) / 10000;
+            // Weighting: 60% Skills (Vector Mapping), 25% Interests, 15% Strengths
+            $matchPercentage = ($skillScore * 0.6) + ($interestScore * 0.25) + ($strengthScore * 0.15);
 
             return [
                 'major_id' => $major->id,
@@ -46,8 +48,8 @@ class MatchingService
             ];
         });
 
-        // Rank and save top 7
-        $rankedResults = $results->sortByDesc('match_percentage')->values()->take(7);
+        // Rank, ensure unique percentages, and save top 7
+        $rankedResults = $this->ensureUniquePercentages($results->sortByDesc('match_percentage')->values())->take(7);
 
         $assessment->results()->delete();
 
@@ -65,94 +67,178 @@ class MatchingService
     }
 
     /**
+     * Calculate skill score using Vector Similarity between User Profile and Major Profile.
+     */
+    private function calculateVectorSkillScore(Major $major, Collection $responses): float
+    {
+        $userSkillsCurrent = collect($responses['skills_current'] ?? []);
+        $userSkillsAspiration = collect($responses['skills_aspiration'] ?? []);
+        
+        $userSkills = $userSkillsCurrent->merge($userSkillsAspiration)
+            ->map(fn($skill) => is_array($skill) ? ($skill['name'] ?? '') : (is_object($skill) ? ($skill->name ?? '') : $skill))
+            ->unique()
+            ->filter();
+
+        if ($userSkills->isEmpty()) return 0;
+
+        // 1. Build User Vector (35 dimensions)
+        $userVector = $this->buildUserVector($userSkills);
+
+        // 2. Build Major Vector (average of linked occupations)
+        $majorVector = $this->getMajorRequirementVector($major);
+
+        // 3. Calculate Cosine Similarity
+        return $this->calculateCosineSimilarity($userVector, $majorVector) * 100;
+    }
+
+    private function buildUserVector(Collection $skillNames): array
+    {
+        $vector = array_fill_keys($this->getOnetSkillCategories(), 0.0);
+
+        // Mapping rules for Lightcast skills to O*NET categories
+        $mapping = [
+            'Programming' => ['programming', 'coding', 'software', 'developer', 'python', 'java', 'script', 'html', 'css', 'sql', 'php'],
+            'Mathematics' => ['math', 'statistics', 'calculus', 'algebra', 'quantitative', 'analytics', 'data science'],
+            'Critical Thinking' => ['critical thinking', 'problem solving', 'analysis', 'logic'],
+            'Reading Comprehension' => ['reading', 'research', 'literacy'],
+            'Writing' => ['writing', 'documentation', 'editing', 'content'],
+            'Speaking' => ['speaking', 'presentation', 'communication', 'public speaking'],
+            'Active Listening' => ['listening', 'empathy', 'interpersonal'],
+            'Science' => ['science', 'biology', 'chemistry', 'physics', 'laboratory', 'medicine'],
+            'Technology Design' => ['design', 'ui', 'ux', 'architecture', 'prototyping', 'creative'],
+            'Judgment and Decision Making' => ['judgment', 'decision making', 'prioritization', 'management'],
+            'Systems Analysis' => ['systems analysis', 'engineering', 'it systems', 'cloud architecture'],
+            'Coordination' => ['coordination', 'teamwork', 'collaboration', 'project management'],
+            'Social Perceptiveness' => ['social', 'psychology', 'human behavior', 'counseling'],
+            'Repairing' => ['repair', 'technician', 'maintenance', 'mechanical'],
+            'Equipment Selection' => ['equipment', 'procurement', 'hardware'],
+        ];
+
+        foreach ($skillNames as $skill) {
+            $skillLower = strtolower($skill);
+            foreach ($mapping as $onetCategory => $keywords) {
+                foreach ($keywords as $keyword) {
+                    if (str_contains($skillLower, $keyword)) {
+                        // Scoring: If a user has a matching skill, we bump that O*NET category.
+                        // For a more advanced version, we could weight the bump.
+                        $vector[$onetCategory] = min(5.0, $vector[$onetCategory] + 2.5);
+                        break;
+                    }
+                }
+            }
+        }
+
+        return $vector;
+    }
+
+    private function getMajorRequirementVector(Major $major): array
+    {
+        $categories = $this->getOnetSkillCategories();
+        $vector = array_fill_keys($categories, 0.0);
+        $occupations = $major->occupations;
+
+        if ($occupations->isEmpty()) return $vector;
+
+        foreach ($categories as $category) {
+            $totalScore = 0;
+            $count = 0;
+
+            foreach ($occupations as $occ) {
+                $skill = $occ->onetSkills->where('name', $category)->first();
+                if ($skill) {
+                    // Score = Importance * Level (normalized to 0-5 scale)
+                    // Importance is usually 1-5, Level is 1-7 in O*NET raw data.
+                    // But in our import, they are raw numbers.
+                    $totalScore += ($skill->importance * $skill->level) / 7;
+                    $count++;
+                }
+            }
+            $vector[$category] = $count > 0 ? ($totalScore / $count) : 0.0;
+        }
+
+        return $vector;
+    }
+
+    private function calculateCosineSimilarity(array $vecA, array $vecB): float
+    {
+        $dotProduct = 0;
+        $normA = 0;
+        $normB = 0;
+
+        foreach ($vecA as $key => $valA) {
+            $valB = $vecB[$key] ?? 0;
+            $dotProduct += $valA * $valB;
+            $normA += $valA * $valA;
+            $normB += $valB * $valB;
+        }
+
+        $norm = sqrt($normA) * sqrt($normB);
+        return $norm == 0 ? 0 : ($dotProduct / $norm);
+    }
+
+    private function getOnetSkillCategories(): array
+    {
+        return [
+            "Critical Thinking", "Operations Analysis", "Social Perceptiveness", "Persuasion", 
+            "Active Listening", "Troubleshooting", "Time Management", "Learning Strategies", 
+            "Systems Evaluation", "Operation and Control", "Negotiation", "Equipment Maintenance", 
+            "Repairing", "Equipment Selection", "Systems Analysis", "Coordination", 
+            "Active Learning", "Management of Financial Resources", "Programming", 
+            "Management of Personnel Resources", "Complex Problem Solving", "Operations Monitoring", 
+            "Speaking", "Management of Material Resources", "Monitoring", "Writing", 
+            "Quality Control Analysis", "Science", "Installation", "Technology Design", 
+            "Instructing", "Mathematics", "Reading Comprehension", "Service Orientation", 
+            "Judgment and Decision Making"
+        ];
+    }
+
+    /**
      * Calculate and save specialization recommendations for a deep dive assessment.
-     *
-     * @param Assessment $assessment
-     * @param Major $major
-     * @return Collection
      */
     public function generateSpecializationRecommendations(Assessment $assessment, Major $major): Collection
     {
         $responses = $assessment->responses()->pluck('response_value', 'question_id');
         
-        $behavioralRatings = [];
-        $occupationRatings = [];
+        $userSkillsCurrent = collect($responses['skills_current'] ?? []);
+        $userSkillsAspiration = collect($responses['skills_aspiration'] ?? []);
+        $userSkills = $userSkillsCurrent->merge($userSkillsAspiration)
+            ->map(fn($skill) => is_array($skill) ? ($skill['name'] ?? '') : (is_object($skill) ? ($skill->name ?? '') : $skill))
+            ->unique()
+            ->filter();
 
-        // Parse responses into behavioral (baseline) and occupation-specific
-        foreach ($responses as $questionId => $rating) {
-            if (str_starts_with($questionId, 'occupation_')) {
-                $occupationId = str_replace('occupation_', '', $questionId);
-                $occupationRatings[$occupationId] = $rating;
-            } elseif (is_numeric($rating)) {
-                // Curated behavioral IDs: st1, bu1, he1, etc.
-                // We only include simple numeric ratings for the baseline
-                $behavioralRatings[] = $rating;
-            }
-        }
-
-        // Calculate baseline score from behavioral questions (0-100)
-        $baselineScore = 20.0; // Default baseline
-        if (count($behavioralRatings) > 0) {
-            $averageRating = array_sum($behavioralRatings) / count($behavioralRatings);
-            // 1 = 0%, 5 = 100%
-            $baselineScore = (($averageRating - 1) / 4) * 100;
-        }
+        // Build user vector once
+        $userVector = $this->buildUserVector($userSkills);
 
         $results = collect();
-        $occupations = $major->occupations;
+        $occupations = $major->occupations()->with('onetSkills')->get();
 
         foreach ($occupations as $occupation) {
-            $matchPercentage = $baselineScore;
-
-            // If we have a specific rating for this occupation, use it to fine-tune
-            // Let the direct rating have 70% weight if present, baseline 30%
-            if (isset($occupationRatings[$occupation->id])) {
-                $directRating = $occupationRatings[$occupation->id];
-                $directScore = (($directRating - 1) / 4) * 100;
-                $matchPercentage = ($directScore * 0.7) + ($baselineScore * 0.3);
+            // Occupation profile vector
+            $occVector = array_fill_keys($this->getOnetSkillCategories(), 0.0);
+            foreach ($occupation->onetSkills as $skill) {
+                $occVector[$skill->name] = ($skill->importance * $skill->level) / 7;
             }
 
-            // Differentiate based on occupation "data weight" to prevent ties
-            $taskCount = is_array($occupation->tasks) ? count($occupation->tasks) : 0;
-            $dataFit = min(3, $taskCount / 10); // Max 3% boost for roles with more task data
-            $matchPercentage += $dataFit;
+            $skillMatch = $this->calculateCosineSimilarity($userVector, $occVector) * 100;
 
-            // Add a visible deterministic spread based on ID (0.1% to 1.5%)
-            $matchPercentage += ($occupation->id % 15) / 10;
+            // Factor in direct occupation ratings if they exist from the deep dive
+            $finalMatch = $skillMatch;
+            if (isset($responses["occupation_{$occupation->id}"])) {
+                $directRating = $responses["occupation_{$occupation->id}"];
+                $directScore = (($directRating - 1) / 4) * 100;
+                // 60% skill vector match, 40% direct preference
+                $finalMatch = ($skillMatch * 0.6) + ($directScore * 0.4);
+            }
 
             $results->push([
                 'occupation_id' => $occupation->id,
                 'occupation' => $occupation,
-                'specialization_id' => null,
-                'specialization' => null,
-                'match_percentage' => $matchPercentage,
-                'scores' => [
-                    'behavioral' => $baselineScore,
-                    'specific' => isset($occupationRatings[$occupation->id]) ? ($directScore ?? 0) : 0,
-                ]
+                'match_percentage' => $finalMatch,
             ]);
         }
 
-        $rankedResults = $results->sortByDesc('match_percentage')->values();
-
-        // Enforce stratification: only first 2 can have same value, others must decay
-        $finalResults = collect();
-        $lastScore = null;
-        
-        foreach ($rankedResults as $index => $data) {
-            $currentScore = round($data['match_percentage'], 2);
-            
-            if ($index > 1 && $lastScore !== null) {
-                // Ensure strictly decreasing after top 2
-                if ($currentScore >= $lastScore) {
-                    $currentScore = $lastScore - 1.5; // Decisive 1.5% drop
-                }
-            }
-            
-            $data['match_percentage'] = max(5, min(100, $currentScore));
-            $finalResults->push($data);
-            $lastScore = $currentScore;
-        }
+        // Rank and ensure unique percentages
+        $finalResults = $this->ensureUniquePercentages($results->sortByDesc('match_percentage')->values());
 
         // Save results
         $assessment->results()->delete();
@@ -162,7 +248,6 @@ class MatchingService
                 'assessment_id' => $assessment->id,
                 'major_id' => $major->id,
                 'occupation_id' => $data['occupation_id'],
-                'specialization_id' => null,
                 'match_percentage' => $data['match_percentage'],
                 'rank' => $index + 1,
                 'reasoning' => [], 
@@ -172,52 +257,40 @@ class MatchingService
         return $finalResults->take(15);
     }
 
-    private function calculateSkillScore(Major $major, Collection $responses): float
+    /**
+     * Ensure all percentages in the collection are unique by subtracting small deltas from duplicates.
+     */
+    private function ensureUniquePercentages(Collection $results): Collection
     {
-        $userSkillsCurrent = collect($responses['skills_current'] ?? []);
-        $userSkillsAspiration = collect($responses['skills_aspiration'] ?? []);
+        $seenPercentages = [];
+        $delta = 0.1;
 
-        // Ensure we only have IDs even if the frontend sends objects
-        $userSkills = $userSkillsCurrent->merge($userSkillsAspiration)
-            ->map(fn($skill) => is_array($skill) ? ($skill['id'] ?? $skill) : (is_object($skill) ? ($skill->id ?? $skill) : $skill))
-            ->unique();
-
-        if ($userSkills->isEmpty()) {
-            return 0;
-        }
-
-        $majorSkills = $major->skills->pluck('id');
-        if ($majorSkills->isEmpty()) {
-            return 0;
-        }
-
-        $intersection = $userSkills->intersect($majorSkills);
-        
-        // Match percentage = (Matching Skills / Total Major Skills) * 100
-        return ($intersection->count() / $majorSkills->count()) * 100;
+        return $results->map(function ($item) use (&$seenPercentages, $delta) {
+            $percentage = round($item['match_percentage'], 1);
+            
+            while (in_array($percentage, $seenPercentages)) {
+                $percentage = round($percentage - $delta, 1);
+            }
+            
+            $percentage = max(1, min(100, $percentage));
+            $seenPercentages[] = $percentage;
+            $item['match_percentage'] = $percentage;
+            
+            return $item;
+        });
     }
 
     /**
      * Calculate rating score (Interests or Strengths) using Inverse Normalized Distance.
-     *
-     * @param array $idealProfile
-     * @param array $userRatings
-     * @return float (0-100)
-     */
-    /**
-     * @param array|string $idealProfile
-     * @param array $userRatings
-     * @return float (0-100)
      */
     private function calculateRatingScore($idealProfile, $userRatings): float
     {
-        // Handle case where idealProfile is a JSON string (sometimes Laravel doesn't cast early enough)
         if (is_string($idealProfile)) {
             $idealProfile = json_decode($idealProfile, true);
         }
 
         if (empty($idealProfile) || empty($userRatings)) {
-            return 20.0; // Default baseline score
+            return 20.0;
         }
 
         $totalDiff = 0;
@@ -225,36 +298,27 @@ class MatchingService
 
         foreach ($idealProfile as $traitId => $idealValue) {
             if (isset($userRatings[$traitId])) {
-                // Difference between user 1-5 and ideal 1-5
                 $diff = abs($idealValue - $userRatings[$traitId]);
-                // Max difference is 4. Weight the score so 0 diff = 100%, 4 diff = 0%
                 $totalDiff += (4 - $diff) / 4;
                 $count++;
             }
         }
 
-        if ($count === 0) {
-            return 0;
-        }
-
-        return ($totalDiff / $count) * 100;
+        return $count === 0 ? 0 : ($totalDiff / $count) * 100;
     }
 
-    /**
-     * Generate human-readable reasoning for the match.
-     */
     private function generateReasoning(Major $major, float $skills, float $interests, float $strengths): array
     {
         $reasons = [];
 
-        if ($skills >= 70) {
-            $reasons[] = "Strong alignment with your current and target skills.";
-        } elseif ($skills >= 40) {
-            $reasons[] = "Matches some of your core abilities.";
+        if ($skills >= 80) {
+            $reasons[] = "Strong alignment with your core technical and cognitive abilities.";
+        } elseif ($skills >= 50) {
+            $reasons[] = "Matches many of your demonstrated skills.";
         }
 
         if ($interests >= 80) {
-            $reasons[] = "Highly aligns with your academic and career interests.";
+            $reasons[] = "Highly aligns with your academic interests.";
         }
 
         if ($strengths >= 80) {

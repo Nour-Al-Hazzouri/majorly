@@ -5,6 +5,7 @@ services:
     plan: free
     rootDir: backend
     dockerfilePath: Dockerfile
+    preDeployCommand: php artisan migrate --force && php artisan db:seed --force
     envVars:
       - key: APP_NAME
         value: Majorly

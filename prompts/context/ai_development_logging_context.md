@@ -43,20 +43,12 @@ When a new log file is created, start it with a short header that states:
 - Previous task log filename (if any)
 - Reason for task switch
 
-### Sensitive Information Safety
-Never record or reproduce sensitive information in the log.
-
-Do not include:
-- API keys, tokens, passwords, private keys
-- Full connection strings
-- Authentication headers / cookies
-- Personal data (addresses, phone numbers, personal emails, government IDs)
-- Internal-only URLs or credentials
-
-If sensitive info appears in user messages or file content:
-- Replace it with `[REDACTED]`
-- Record only what type of secret it was and where it should be stored (e.g., environment variables)
-- Prefer listing environment variable names only (no values)
+### 🔒 Sensitive Information & Path Safety
+- **NEVER** include absolute system paths (e.g., `/home/user/...` or `/media/...`).
+- **ALWAYS** use project-relative paths (e.g., `backend/app/...` or `frontend/lib/...`).
+- **NEVER** record API keys, secrets, passwords, or tokens.
+- If a sensitive value must be mentioned, use `[REDACTED]` or reference the environment variable name only (e.g., `DB_PASSWORD`).
+- **Formatting Rule**: Only include the user request, the files modified/created, and a summary/logic explanation.
 
 ### Log Entry Format
 Each log entry must follow this exact structure:
@@ -64,64 +56,19 @@ Each log entry must follow this exact structure:
 ```markdown
 ## Log Entry #[NUMBER] - [TIMESTAMP]
 
-### 🎯 User Prompt
-**Context**: [Brief description of what the user was trying to achieve]
+### 🎯 User Request
 **Request**: 
 ```
 [Exact user prompt/request]
 ```
 
-### 🤖 AI Response Summary
-**Action Taken**: [Brief description of what the AI did]
-**Reasoning**: [Why this approach was chosen]
-**Tools Used**: [List of tools/methods used]
-
-**High-Level Outcome**:
-- [1-3 bullets describing what is now true after the change]
-
 ### 📁 Files Modified/Created
-#### New Files Created:
-- `[file_path]` - [Purpose/description]
-- `[file_path]` - [Purpose/description]
+- `[relative_path]` - [Brief change summary]
 
-#### Files Updated:
-- `[file_path]` - [What was changed and why]
-- `[file_path]` - [What was changed and why]
-
-### 🔧 Technical Changes
-**Logic Added/Modified**:
-- [Detailed description of new functionality]
-- [Explanation of code logic and implementation approach]
-- [Any architectural decisions made]
-
-**Dependencies/Imports**:
-- [New dependencies added]
-- [Import statements modified]
-
-**Configuration Changes**:
-- [Environment variables]
-- [Config files modified]
-- [Build/deployment settings]
-
-### 🔒 Security & Privacy Notes
-- [Any security-relevant considerations, e.g., auth/authz changes, input validation, secrets handling]
-- [Confirm no secrets were logged; note any redactions]
-
-### 🎨 UI/UX Changes (if applicable)
-- [Visual changes made]
-- [User experience improvements]
-- [Styling modifications]
-
-### 🧪 Testing Considerations
-- [Tests that need to be written]
-- [Testing scenarios to consider]
-- [Quality assurance notes]
-
-### 📝 Notes & Observations
-- [Any challenges encountered]
-- [Alternative approaches considered]
-- [Future improvements needed]
-- [Team communication notes]
+### 🤖 Summary & Logic
+**Action Taken**: [Concise description of what was done]
+**Logic/Reasoning**: [Technical explanation of the "why" and "how"]
+```
 
 ---
 ```
@@ -150,113 +97,9 @@ Each log entry must follow this exact structure:
 - Link to relevant documentation files
 - Note dependencies between different components
 
-### Log Categories
-
-#### 🚀 **Project Setup**
-- Initial project creation
-- Framework selection and setup
-- Environment configuration
-- Initial file structure creation
-
-#### 🏗️ **Development Phase**
-- Feature implementation
-- Bug fixes and debugging
-- Code refactoring
-- Performance optimizations
-
-#### 🎨 **UI/UX Development**
-- Component creation
-- Styling implementation
-- Responsive design adjustments
-- User interaction features
-
-#### 🔗 **Integration Work**
-- API integration
-- Database connections
-- Third-party service integration
-- Frontend-backend connectivity
-
-#### 🧪 **Testing & Quality**
-- Test implementation
-- Code reviews
-- Performance testing
-- Security audits
-
-#### 🚀 **Deployment & DevOps**
-- Build configuration
-- Deployment setup
-- Environment management
-- Production optimizations
-
-## Expected Deliverables
-
-### 1. **Real-Time Development Log**
-- Comprehensive log file updated after every AI interaction
-- Complete traceability of all project changes
-- Detailed technical documentation of all implementations
-
-### 2. **Project Timeline**
-- Chronological record of development progress
-- Clear milestones and achievements documented
-- Time tracking for different development phases
-
-### 3. **Knowledge Documentation**
-- Lessons learned throughout the process
-- Best practices discovered
-- Common patterns and solutions identified
-
-### 4. **Quality Assurance Trail**
-- Complete audit trail for code reviews
-- Documentation of all decisions and their reasoning
-- Reference material for future projects
-
-## Quality Assurance
-
-### Completeness Checklist
-For each log entry, ensure:
-- [ ] User prompt is recorded exactly as provided
-- [ ] AI response is summarized with key actions
-- [ ] ALL file changes are documented
-- [ ] Technical reasoning is explained
-- [ ] Future considerations are noted
-
-### Consistency Standards
-- Use consistent formatting for all entries
-- Maintain chronological order
-- Use clear, descriptive language
-- Include relevant technical details
-
-### Review Process
-- Regular log review for completeness
-- Cross-reference with actual file changes
-- Ensure technical accuracy of descriptions
-- Validate that all decisions are properly documented
-
-## Integration with Development Workflow
-
-### When to Log
-- **Before starting any development task**: Log the user request
-- **During development**: Log major decisions and changes
-- **After completing tasks**: Log final results and files modified
-- **When encountering issues**: Log problems and solutions
-
-### Team Collaboration
-- Share log entries during team meetings
-- Use log for code review preparation
-- Reference log entries in pull requests
-- Maintain log as living documentation
-
-### Project Handover
-- Complete log serves as comprehensive project documentation
-- New team members can understand entire development history
-- Facilitates maintenance and future enhancements
-- Provides context for all technical decisions
-
 ## Success Metrics
-- 100% of AI interactions are logged
-- All file changes are documented with reasoning
-- Technical decisions are clearly explained
-- Log serves as effective project documentation
-- Team can reconstruct development process from log alone
+- 100% of interactions are logged with relative paths.
+- No sensitive data or absolute paths exported.
+- Log entries are minimalist: Request, Files, and Summary/Logic only.
 
 Remember: This log is not just a record—it's a valuable knowledge asset that will benefit the entire team and future projects. Maintain it with the same care and attention as the code itself.

@@ -19,39 +19,51 @@ class DashboardController extends Controller
             'occupations_favorited' => $user->savedOccupations()->count(),
         ];
 
-        // Primary Match
-        // Assuming "Primary Match" is the highest ranked result from the most recent completed assessment
-        $latestAssessment = $user->assessments()
-            ->latest()
-            ->with(['results' => function ($query) {
-                $query->orderBy('match_percentage', 'desc');
-            }])
+        // Primary Match: Highest affinity across ALL assessments
+        $bestToDate = \App\Models\AssessmentResult::whereHas('assessment', function($q) use ($user) {
+                $q->where('user_id', $user->id);
+            })
+            ->orderBy('match_percentage', 'desc')
+            ->with(['major', 'specialization'])
             ->first();
 
         $primaryMatch = null;
-        if ($latestAssessment && $latestAssessment->results->isNotEmpty()) {
-            $topResult = $latestAssessment->results->first();
+        if ($bestToDate) {
             $primaryMatch = [
-                'type' => 'major', // Or determine if it's specialization/career based on result type
-                'name' => $topResult->major->name ?? 'Unknown',
-                'affinity' => $topResult->match_percentage,
-                'id' => $topResult->major_id,
+                'type' => $bestToDate->specialization ? 'specialization' : 'major',
+                'name' => $bestToDate->specialization ? $bestToDate->specialization->name : ($bestToDate->major->name ?? 'Unknown'),
+                'affinity' => round($bestToDate->match_percentage),
+                'id' => $bestToDate->specialization_id ?? $bestToDate->major_id,
             ];
-            
-            // If result has specialization, prioritize showing that as it's more specific
-            if ($topResult->specialization) {
-                 $primaryMatch = [
-                    'type' => 'specialization',
-                    'name' => $topResult->specialization->name,
-                    'affinity' => $topResult->match_percentage,
-                    'id' => $topResult->specialization_id,
-                 ];
+            // Format nice display name if possible, e.g. Major name
+            if ($bestToDate->major) {
+                $primaryMatch['major_name'] = $bestToDate->major->name;
             }
         }
+
+        // Assessment History
+        $history = $user->assessments()
+            ->latest()
+            ->with(['results' => function($q) {
+                $q->orderBy('match_percentage', 'desc');
+            }, 'results.major'])
+            ->get()
+            ->map(function ($assessment) {
+                $topResult = $assessment->results->first();
+                return [
+                    'id' => $assessment->id,
+                    'type' => ucfirst($assessment->type ?? 'General'),
+                    'date' => $assessment->created_at->format('M d, Y'),
+                    'top_match' => $topResult ? ($topResult->major->name ?? 'Unknown') : 'Incomplete',
+                    'score' => $topResult ? round($topResult->match_percentage) : 0,
+                    'status' => $assessment->status ?? 'completed',
+                ];
+            });
 
         return response()->json([
             'stats' => $stats,
             'primary_match' => $primaryMatch,
+            'history' => $history,
             'user' => [
                 'name' => $user->name,
                 'email' => $user->email,

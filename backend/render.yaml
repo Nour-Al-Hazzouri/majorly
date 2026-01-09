@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: majorly-backend
+    env: php
+    plan: free
+    buildCommand: composer install --no-dev --optimize-autoloader && pnpm install && pnpm run build
+    startCommand: php artisan serve --host=0.0.0.0 --port=$PORT
+    envVars:
+      - key: APP_NAME
+        value: Majorly
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: APP_KEY
+        generateValue: true
+      - key: APP_URL
+        sync: false
+    region: ohio # You can change this to 'oregon', 'frankfurt', or 'singapore'

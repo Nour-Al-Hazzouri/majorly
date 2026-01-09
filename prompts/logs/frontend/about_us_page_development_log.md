@@ -211,3 +211,41 @@
 ### 📁 Files Modified/Created
 #### Files Updated:
 - `frontend/app/about/page.tsx`: Refined story content.
+
+## Log Entry #9 - 2026-01-09
+
+### 🎯 User Prompt
+**Context**: Finalizing project documentation with a parent README.
+**Request**:
+> Add a readme to contain the following: the logo if possible, a brief introductory and description to the project, All information about tech stack, Why I built this platform, How to run it with prerequisites and necessary command for frontend and backend, then in the end precise that this project was just a fun experience for me and that anyone can fork and use the code, just give me a shoutout with the repo link ";)"
+
+### 🤖 AI Response Summary
+**Action Taken**:
+- **Root README**: Created a comprehensive `README.md` in the project root.
+    - Included a clear introduction and "Why I Built This" section using the user's personal journey.
+    - Detailed the full tech stack (Next.js, Laravel, Lightcast, O*NET).
+    - Provided step-by-step setup instructions for both frontend and backend.
+    - Added the open-source/fun-project disclaimer with a shoutout request.
+
+**Reasoning**:
+- **Accessibility**: A clear README is the first point of contact for any developer or user visiting the repository.
+- **Onboarding**: Providing explicit setup commands lowers the barrier to entry for anyone wishing to fork the project.
+
+### 📁 Files Modified/Created
+#### New Files Created:
+- `README.md`: The main project documentation.
+
+## Log Entry #10 - 2026-01-09
+
+### 🎯 User Prompt
+**Context**: Added personal contact info for bug reporting to README.
+**Request**:
+> Add a note at the end before the use the code part: Note: I alone can only test so much, if you happen to come across any bugs, glitches, or unexpected behavior, git me up on linkedIn: https://www.linkedin.com/in/nour-al-hazzouri/
+
+### 🤖 AI Response Summary
+**Action Taken**:
+- **README.md**: Added a GitHub-style alert with the user's LinkedIn profile for bug reporting/feedback.
+
+### 📁 Files Modified/Created
+#### Files Updated:
+- `README.md`: Added LinkedIn contact note.

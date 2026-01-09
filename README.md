@@ -17,7 +17,7 @@ At the same time, I wanted to push the boundaries of modern development. I wante
 ## 🛠 Tech Stack
 
 ### Frontend
-- **Framework**: [Next.js 15+](https://nextjs.org/) (App Router)
+- **Framework**: [Next.js 16+](https://nextjs.org/) (App Router)
 - **Library**: [React 19](https://react.dev/)
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/)
 - **Animations**: [Framer Motion](https://www.framer.com/motion/)

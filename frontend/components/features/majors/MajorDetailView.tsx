@@ -140,7 +140,7 @@ export const MajorDetailView: React.FC<MajorDetailViewProps> = ({ slug }) => {
                 <hr className="border-slate-100" />
 
                 <section>
-                    <SkillsList skills={major.skills} />
+                    <SkillsList initialSkills={major.skills} majorId={major.id} />
                 </section>
 
                 <hr className="border-slate-100" />

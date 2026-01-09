@@ -128,7 +128,7 @@ function SpecializationCard({ result, index }: { result: SpecializationResult; i
                                     "text-3xl font-black",
                                     isOccupation ? "text-emerald-600" : "text-indigo-600"
                                 )}>
-                                    {Math.round(result.match_percentage)}%
+                                    {Number(result.match_percentage).toFixed(1)}%
                                 </span>
                                 <p className="text-[10px] font-bold text-[#64748b] uppercase tracking-wider">Match Score</p>
                             </div>

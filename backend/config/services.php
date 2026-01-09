@@ -35,4 +35,13 @@ return [
         ],
     ],
 
+    'lightcast' => [
+        'client_id' => env('LIGHTCAST_CLIENT_ID'),
+        'client_secret' => env('LIGHTCAST_CLIENT_SECRET'),
+    ],
+
+    'onet' => [
+        'api_key' => env('ONET_API_KEY'),
+    ],
+
 ];

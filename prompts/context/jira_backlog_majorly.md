@@ -339,6 +339,7 @@ Major Recommendation Platform (MRP) - A web-based platform to help students choo
   - **Points**: 1
 
 ---
+---
 
 ### Story 3.3: Build Frontend Authentication Context
 **Description**:
@@ -421,6 +422,7 @@ Major Recommendation Platform (MRP) - A web-based platform to help students choo
   - **Priority**: Highest
   - **Points**: 1
 
+---
 ---
 
 ## EPIC 4: Tier 1 Assessment System
@@ -571,6 +573,7 @@ Major Recommendation Platform (MRP) - A web-based platform to help students choo
   - **Points**: 1
 
 ---
+---
 
 ## EPIC 5: Matching Algorithm & Results
 **Epic Description**: Implement the core matching algorithm that calculates major recommendations based on assessment responses, and display personalized results.
@@ -720,6 +723,7 @@ Major Recommendation Platform (MRP) - A web-based platform to help students choo
   - **Points**: 2
 
 ---
+---
 
 ## EPIC 6: Major Details & Resources
 **Epic Description**: Build detailed major pages showing skills, career paths, salary data, and resources. Implement browse/search functionality.
@@ -822,6 +826,7 @@ Major Recommendation Platform (MRP) - A web-based platform to help students choo
   - **Priority**: High
   - **Points**: 1
 
+---
 ---
 
 ## EPIC 7: Deep Dive Tests

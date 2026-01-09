@@ -69,7 +69,7 @@ const WelcomeStep = ({ onStart, isDeepDive }: WelcomeStepProps) => {
                     <ArrowRight className="ml-2 w-5 h-5 text-white" />
                 </Button>
                 <p className="text-sm text-[#94a3b8] mt-6 font-medium">
-                    No account required • Instant results
+                    Instant results
                 </p>
             </CardFooter>
         </Card>

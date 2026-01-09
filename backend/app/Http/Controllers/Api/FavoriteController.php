@@ -20,16 +20,16 @@ class FavoriteController extends Controller
 
         switch ($type) {
             case 'major':
-                $user->savedMajors()->toggle($id);
-                $isFavorited = $user->savedMajors()->where('major_id', $id)->exists();
+                $status = $user->savedMajors()->toggle($id);
+                $isFavorited = count($status['attached']) > 0;
                 break;
             case 'specialization':
-                $user->savedSpecializations()->toggle($id);
-                $isFavorited = $user->savedSpecializations()->where('specialization_id', $id)->exists();
+                $status = $user->savedSpecializations()->toggle($id);
+                $isFavorited = count($status['attached']) > 0;
                 break;
             case 'occupation':
-                $user->savedOccupations()->toggle($id);
-                $isFavorited = $user->savedOccupations()->where('occupation_id', $id)->exists();
+                $status = $user->savedOccupations()->toggle($id);
+                $isFavorited = count($status['attached']) > 0;
                 break;
         }
 

@@ -56,4 +56,14 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Major::class, 'saved_majors')->withTimestamps();
     }
+
+    public function savedSpecializations()
+    {
+        return $this->belongsToMany(Specialization::class, 'saved_specializations')->withTimestamps();
+    }
+
+    public function savedOccupations()
+    {
+        return $this->belongsToMany(Occupation::class, 'saved_occupations')->withTimestamps();
+    }
 }

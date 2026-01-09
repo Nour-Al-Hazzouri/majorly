@@ -8,13 +8,14 @@ interface MajorHeaderProps {
     name: string;
     category: string;
     description: string;
+    children?: React.ReactNode;
 }
 
-export const MajorHeader: React.FC<MajorHeaderProps> = ({ name, category, description }) => {
+export const MajorHeader: React.FC<MajorHeaderProps> = ({ name, category, description, children }) => {
     return (
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-                <div>
+                <div className="flex-1">
                     <Badge variant="secondary" className="mb-2">
                         {category}
                     </Badge>
@@ -22,6 +23,7 @@ export const MajorHeader: React.FC<MajorHeaderProps> = ({ name, category, descri
                         {name}
                     </h1>
                 </div>
+                {children && <div className="flex-shrink-0">{children}</div>}
             </div>
 
             <Card className="border-none shadow-sm bg-slate-50/50">

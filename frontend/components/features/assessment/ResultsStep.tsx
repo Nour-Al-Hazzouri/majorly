@@ -47,9 +47,9 @@ export default function ResultsStep({ results, onRetake }: ResultsStepProps) {
             </motion.div>
 
             <div className="space-y-6">
-                {results.map((result, index) => (
+                {results.filter(r => r.major).map((result, index) => (
                     <MajorResultCard
-                        key={result.major.id}
+                        key={result.major!.id}
                         result={result}
                         index={index}
                     />
@@ -81,15 +81,18 @@ export default function ResultsStep({ results, onRetake }: ResultsStepProps) {
 }
 
 function MajorResultCard({ result, index }: { result: AssessmentResult; index: number }) {
+    if (!result.major) return null;
+    const major = result.major;
+
     const [isExpanded, setIsExpanded] = useState(index === 0);
-    const [isFavorite, setIsFavorite] = useState(result.major.is_favorite ?? false);
+    const [isFavorite, setIsFavorite] = useState(major.is_favorite ?? false);
     const [isSaving, setIsSaving] = useState(false);
 
     const toggleFavorite = async (e: React.MouseEvent) => {
         e.stopPropagation();
         setIsSaving(true);
         try {
-            const response = await api.post(`/api/majors/${result.major.id}/favorite`);
+            const response = await api.post(`/api/majors/${major.id}/favorite`);
             setIsFavorite(response.data.is_favorite);
         } catch (error) {
             console.error('Failed to toggle favorite:', error);
@@ -121,14 +124,14 @@ function MajorResultCard({ result, index }: { result: AssessmentResult; index: n
                                 {index + 1}
                             </div>
                             <div>
-                                <h3 className="text-xl font-bold text-[#1e293b]">{result.major.name}</h3>
-                                <p className="text-[#64748b] font-medium">{result.major.category}</p>
+                                <h3 className="text-xl font-bold text-[#1e293b]">{major.name}</h3>
+                                <p className="text-[#64748b] font-medium">{major.category}</p>
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-6">
-                            <div className="text-right">
-                                <span className="text-3xl font-black text-[#4F46E5]">
+                        <div className="flex items-center justify-between w-full md:w-auto gap-4 md:gap-6 mt-4 md:mt-0 pl-16 md:pl-0">
+                            <div className="text-left md:text-right">
+                                <span className="text-2xl md:text-3xl font-black text-[#4F46E5]">
                                     {Math.round(result.match_percentage)}%
                                 </span>
                                 <p className="text-[10px] font-bold text-[#64748b] uppercase tracking-wider">Match Score</p>
@@ -164,7 +167,7 @@ function MajorResultCard({ result, index }: { result: AssessmentResult; index: n
                             <CardContent className="pt-0 pb-6 px-6 bg-white/40 backdrop-blur-sm border-t border-white/40">
                                 <div className="space-y-6 pt-6">
                                     <p className="text-[#475569] leading-relaxed">
-                                        {result.major.description}
+                                        {major.description}
                                     </p>
 
                                     <div className="grid md:grid-rows-1 gap-4">
@@ -184,20 +187,20 @@ function MajorResultCard({ result, index }: { result: AssessmentResult; index: n
                                         </div>
                                     </div>
 
-                                    <div className="flex flex-wrap gap-3 pt-2">
-                                        <Button asChild className="rounded-xl bg-[#4F46E5] hover:bg-[#4338CA] text-white shadow-lg shadow-[#4F46E5]/20 gap-2">
-                                            <Link href={`/majors/${result.major.slug}`}>
+                                    <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                                        <Button asChild className="w-full sm:w-auto rounded-xl bg-[#4F46E5] hover:bg-[#4338CA] text-white shadow-lg shadow-[#4F46E5]/20 gap-2">
+                                            <Link href={`/majors/${major.slug}`}>
                                                 Explore Major Details
                                                 <ArrowRight className="w-4 h-4" />
                                             </Link>
                                         </Button>
-                                        <Button asChild variant="outline" className="rounded-xl border-[#4F46E5] text-[#4F46E5] hover:bg-[#4F46E5]/5 gap-2">
-                                            <Link href={`/assessment/deep-dive/${result.major.id}`}>
+                                        <Button asChild variant="outline" className="w-full sm:w-auto rounded-xl border-[#4F46E5] text-[#4F46E5] hover:bg-[#4F46E5]/5 gap-2">
+                                            <Link href={`/assessment/deep-dive/${major.id}`}>
                                                 Take Deep Dive
                                                 <ArrowUpRight className="w-4 h-4" />
                                             </Link>
                                         </Button>
-                                        <Button variant="ghost" className="rounded-xl text-[#64748b] hover:bg-white/60 gap-2">
+                                        <Button variant="ghost" className="w-full sm:w-auto rounded-xl text-[#64748b] hover:bg-white/60 gap-2">
                                             <BookOpen className="w-4 h-4" />
                                             View Career Paths
                                         </Button>

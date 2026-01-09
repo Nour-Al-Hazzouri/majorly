@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 import { useAuth } from "@/components/providers/AuthProvider";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, LogOut, BookOpen, Sparkles, User, Menu, X } from "lucide-react";
+import { LayoutDashboard, LogOut, BookOpen, Sparkles, User, Menu, X, Info } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -75,7 +75,22 @@ export function Sidebar() {
                     })}
                 </nav>
 
-                <div className="mt-auto pt-6 border-t border-slate-100">
+                <div className="mt-auto pt-6 border-t border-slate-100 space-y-2">
+                    <Button
+                        asChild
+                        variant="ghost"
+                        className={cn(
+                            "w-full justify-start gap-3 transition-colors",
+                            pathname === "/about"
+                                ? "bg-indigo-50 text-indigo-700"
+                                : "text-slate-600 hover:text-indigo-600 hover:bg-indigo-50"
+                        )}
+                    >
+                        <Link href="/about">
+                            <Info className="w-5 h-5" />
+                            About Us
+                        </Link>
+                    </Button>
                     <Button
                         variant="ghost"
                         onClick={() => logout()}
@@ -151,7 +166,23 @@ export function Sidebar() {
                                 })}
                             </nav>
 
-                            <div className="mt-auto pt-6 border-t border-slate-100">
+                            <div className="mt-auto pt-6 border-t border-slate-100 space-y-2">
+                                <Button
+                                    asChild
+                                    variant="ghost"
+                                    className={cn(
+                                        "w-full justify-start gap-4 text-lg h-12",
+                                        pathname === "/about"
+                                            ? "bg-indigo-50 text-indigo-700"
+                                            : "text-slate-600"
+                                    )}
+                                    onClick={() => setIsMobileOpen(false)}
+                                >
+                                    <Link href="/about">
+                                        <Info className="w-5 h-5" />
+                                        About Us
+                                    </Link>
+                                </Button>
                                 <Button
                                     variant="ghost"
                                     onClick={() => logout()}

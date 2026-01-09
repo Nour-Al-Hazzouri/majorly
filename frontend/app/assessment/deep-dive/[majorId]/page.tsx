@@ -17,7 +17,11 @@ export default async function DeepDiveAssessmentPage({ params }: DeepDiveAssessm
 
     return (
         <main className="min-h-screen bg-[#F8FAFC]">
-            <AssessmentWizard majorId={parseInt(majorId)} />
+            <AssessmentWizard
+                majorId={parseInt(majorId)}
+                backLink="/dashboard"
+                backLabel="Back to Dashboard"
+            />
         </main>
     );
 }

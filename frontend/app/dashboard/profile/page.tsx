@@ -75,31 +75,31 @@ export default function ProfilePage() {
                     </header>
 
                     <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-8">
-                        <TabsList className="bg-slate-100/50 border border-slate-200 p-1.5 rounded-xl inline-flex w-auto">
+                        <TabsList className="bg-slate-100 dark:bg-slate-100 p-1 rounded-xl inline-flex h-auto w-auto">
                             <TabsTrigger
                                 value="overview"
-                                className="rounded-lg px-4 py-2 gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all"
+                                className="rounded-lg px-4 py-2 gap-2 text-slate-600 dark:text-slate-600 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm data-[state=active]:dark:bg-white data-[state=active]:dark:text-indigo-600 transition-all font-medium"
                             >
                                 <LayoutDashboard className="w-4 h-4" />
                                 Overview
                             </TabsTrigger>
                             <TabsTrigger
                                 value="assessments"
-                                className="rounded-lg px-4 py-2 gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all"
+                                className="rounded-lg px-4 py-2 gap-2 text-slate-600 dark:text-slate-600 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm data-[state=active]:dark:bg-white data-[state=active]:dark:text-indigo-600 transition-all font-medium"
                             >
                                 <History className="w-4 h-4" />
                                 Assessment History
                             </TabsTrigger>
                             <TabsTrigger
                                 value="favorites"
-                                className="rounded-lg px-4 py-2 gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all"
+                                className="rounded-lg px-4 py-2 gap-2 text-slate-600 dark:text-slate-600 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm data-[state=active]:dark:bg-white data-[state=active]:dark:text-indigo-600 transition-all font-medium"
                             >
                                 <Heart className="w-4 h-4" />
-                                Saved Majors
+                                Saved Items
                             </TabsTrigger>
                             <TabsTrigger
                                 value="settings"
-                                className="rounded-lg px-4 py-2 gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all"
+                                className="rounded-lg px-4 py-2 gap-2 text-slate-600 dark:text-slate-600 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm data-[state=active]:dark:bg-white data-[state=active]:dark:text-indigo-600 transition-all font-medium"
                             >
                                 <Settings className="w-4 h-4" />
                                 Account Settings

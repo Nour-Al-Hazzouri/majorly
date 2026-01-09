@@ -62,11 +62,11 @@ const WelcomeStep = ({ onStart, isDeepDive }: WelcomeStepProps) => {
             <CardFooter className="pb-12 pt-6 flex flex-col items-center px-10">
                 <Button
                     size="lg"
-                    className="w-full sm:w-80 h-16 text-lg font-bold rounded-full bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:opacity-90 transition-all shadow-xl shadow-[#4F46E5]/25"
+                    className="w-full sm:w-80 h-16 text-lg font-bold rounded-full bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:opacity-90 transition-all shadow-xl shadow-[#4F46E5]/25 text-white"
                     onClick={onStart}
                 >
                     {isDeepDive ? 'Start Deep Dive' : 'Start Free Assessment'}
-                    <ArrowRight className="ml-2 w-5 h-5" />
+                    <ArrowRight className="ml-2 w-5 h-5 text-white" />
                 </Button>
                 <p className="text-sm text-[#94a3b8] mt-6 font-medium">
                     No account required • Instant results

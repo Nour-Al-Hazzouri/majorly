@@ -8,7 +8,7 @@ import { useAuth } from '@/components/providers/AuthProvider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Mail, Lock, User, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Mail, Lock, User, Eye, EyeOff, Loader2, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'motion/react';
 
@@ -41,8 +41,8 @@ export const RegisterForm = () => {
             className="w-full max-w-md p-8 bg-white rounded-3xl shadow-xl space-y-6"
         >
             <div className="text-center space-y-2">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] flex items-center justify-center mx-auto mb-4">
-                    <User className="w-6 h-6 text-white" />
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] flex items-center justify-center mx-auto mb-4 shadow-lg shadow-[#4F46E5]/20">
+                    <Sparkles className="w-6 h-6 text-white" />
                 </div>
                 <h1 className="text-3xl font-bold text-[#1e293b]">Create Account</h1>
                 <p className="text-[#64748b]">Start your academic journey today</p>
@@ -127,7 +127,7 @@ export const RegisterForm = () => {
                 <Button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full h-12 rounded-2xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:opacity-90 transition-all shadow-lg shadow-[#4F46E5]/25"
+                    className="w-full h-12 rounded-2xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:opacity-90 transition-all shadow-lg shadow-[#4F46E5]/25 text-white"
                 >
                     {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Create Account'}
                 </Button>

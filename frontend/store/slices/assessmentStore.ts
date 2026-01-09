@@ -9,10 +9,11 @@ interface AssessmentState {
     responses: Record<string, any>;
     results: (AssessmentResult[] | SpecializationResult[]) | null;
     isSubmitting: boolean;
-    userId: number | null;
+    activeMajorId: number | null;
 
     // Actions
     setAssessmentId: (id: number | null) => void;
+    setActiveMajorId: (id: number | null) => void;
     setUserId: (id: number | null) => void;
     setSections: (sections: AssessmentSection[]) => void;
     setResponse: (questionId: string, value: any) => void;
@@ -28,6 +29,7 @@ export const useAssessmentStore = create<AssessmentState>()(
     persist(
         (set) => ({
             assessmentId: null,
+            activeMajorId: null,
             currentStep: 0,
             sections: [],
             responses: {},
@@ -36,6 +38,7 @@ export const useAssessmentStore = create<AssessmentState>()(
             userId: null,
 
             setAssessmentId: (id) => set({ assessmentId: id }),
+            setActiveMajorId: (id) => set({ activeMajorId: id }),
             setUserId: (id) => set({ userId: id }),
             setSections: (sections) => set({ sections }),
             setResponse: (questionId, value) =>
@@ -49,6 +52,7 @@ export const useAssessmentStore = create<AssessmentState>()(
             setIsSubmitting: (status) => set({ isSubmitting: status }),
             reset: () => set({
                 assessmentId: null,
+                activeMajorId: null,
                 currentStep: 0,
                 responses: {},
                 results: null,
@@ -60,6 +64,7 @@ export const useAssessmentStore = create<AssessmentState>()(
             name: 'assessment-storage',
             partialize: (state) => ({
                 assessmentId: state.assessmentId,
+                activeMajorId: state.activeMajorId,
                 responses: state.responses,
                 currentStep: state.currentStep,
                 results: state.results,

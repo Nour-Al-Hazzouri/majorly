@@ -139,7 +139,7 @@ export function ProfileForm({ user, onUpdate }: ProfileFormProps) {
                     </div>
                 </div>
 
-                <Button type="submit" disabled={isSubmitting} className="bg-indigo-600 hover:bg-indigo-700">
+                <Button type="submit" disabled={isSubmitting} className="bg-indigo-600 hover:bg-indigo-700 text-white">
                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Save Changes
                 </Button>

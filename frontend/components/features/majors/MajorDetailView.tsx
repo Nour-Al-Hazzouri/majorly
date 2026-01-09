@@ -1,16 +1,18 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { getMajorBySlug } from '@/lib/api';
+import { getMajorBySlug, toggleFavorite, getFavoriteStatus } from '@/lib/api';
 import { MajorHeader } from './MajorHeader';
 import { SkillsList } from './SkillsList';
 import { SpecializationsList } from './SpecializationsList';
 import { CareerPaths } from './CareerPaths';
-import { Loader2, AlertCircle, ChevronLeft, Briefcase, Sparkles, ArrowRight } from 'lucide-react';
+import { Loader2, AlertCircle, ChevronLeft, Briefcase, Sparkles, ArrowRight, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useRouter } from 'next/navigation';
+import { cn } from '@/lib/utils';
+import { useAuth } from '@/components/providers/AuthProvider';
 
 interface MajorDetailViewProps {
     slug: string;
@@ -20,7 +22,10 @@ export const MajorDetailView: React.FC<MajorDetailViewProps> = ({ slug }) => {
     const [major, setMajor] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [isFavorited, setIsFavorited] = useState(false);
+    const [favLoading, setFavLoading] = useState(false);
     const router = useRouter();
+    const { user } = useAuth();
 
     useEffect(() => {
         const fetchMajor = async () => {
@@ -28,6 +33,16 @@ export const MajorDetailView: React.FC<MajorDetailViewProps> = ({ slug }) => {
                 setLoading(true);
                 const response = await getMajorBySlug(slug);
                 setMajor(response.data);
+
+                // Check favorite status if major is loaded and user is logged in
+                if (response.data && user) {
+                    try {
+                        const favStatus = await getFavoriteStatus('major', response.data.id);
+                        setIsFavorited(favStatus.data.favorited);
+                    } catch (e) {
+                        console.error("Failed to check favorite status", e);
+                    }
+                }
             } catch (err: any) {
                 console.error('Error fetching major:', err);
                 setError(err.response?.status === 404
@@ -41,7 +56,21 @@ export const MajorDetailView: React.FC<MajorDetailViewProps> = ({ slug }) => {
         if (slug) {
             fetchMajor();
         }
-    }, [slug]);
+    }, [slug, user]);
+
+    const handleToggleFavorite = async () => {
+        if (!major || favLoading) return;
+
+        try {
+            setFavLoading(true);
+            const response = await toggleFavorite('major', major.id);
+            setIsFavorited(response.data.favorited);
+        } catch (error) {
+            console.error("Failed to toggle favorite", error);
+        } finally {
+            setFavLoading(false);
+        }
+    };
 
     if (loading) {
         return (
@@ -89,7 +118,23 @@ export const MajorDetailView: React.FC<MajorDetailViewProps> = ({ slug }) => {
                         name={major.name}
                         category={major.category}
                         description={major.description}
-                    />
+                    >
+                        <Button
+                            variant="outline"
+                            size="lg"
+                            onClick={handleToggleFavorite}
+                            disabled={favLoading}
+                            className={cn(
+                                "flex items-center gap-2 transition-all duration-300",
+                                isFavorited
+                                    ? "bg-rose-50 border-rose-200 text-rose-600 hover:bg-rose-100 hover:text-rose-700 hover:border-rose-300"
+                                    : "text-slate-600 hover:text-rose-600 hover:border-rose-200"
+                            )}
+                        >
+                            <Heart className={cn("w-5 h-5", isFavorited && "fill-current")} />
+                            {isFavorited ? "Saved" : "Save Major"}
+                        </Button>
+                    </MajorHeader>
                 </section>
 
                 <hr className="border-slate-100" />

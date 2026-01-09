@@ -19,3 +19,13 @@ export const getMajors = (params?: { search?: string, category?: string, page?: 
 export const getMajorBySlug = (slug: string) => api.get(`/api/majors/${slug}`);
 
 export default api;
+
+// Dashboard
+export const getDashboardData = () => api.get('/api/dashboard');
+
+// Favorites
+export const toggleFavorite = (type: 'major' | 'specialization' | 'occupation', id: number) =>
+    api.post('/api/favorites/toggle', { type, id });
+
+export const getFavoriteStatus = (type: 'major' | 'specialization' | 'occupation', id: number) =>
+    api.get('/api/favorites/status', { params: { type, id } });

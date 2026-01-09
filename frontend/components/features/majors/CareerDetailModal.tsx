@@ -121,21 +121,9 @@ export const CareerDetailModal: React.FC<CareerDetailModalProps> = ({ isOpen, on
     const skillItems = sortedKnowledge.filter(k => k.type === 'Skill');
 
     const renderSkillBar = (item: OnetKnowledge, index: number, colorClass: string, progressBarClass: string, bgClass: string) => {
-        const rawPercentage = item.pivot.importance * 20;
-        // Apply a visual decrement for items after the first 2 in a tie-break group to avoid "flat" visuals
-        // as requested by the user: "no more than 2 have the same percentage"
-        let displayPercentage = rawPercentage;
-
-        // Count how many preceding items in the sorted list have the same raw percentage
-        const precedingTies = sortedKnowledge
-            .filter(k => k.type === item.type)
-            .slice(0, index)
-            .filter(k => k.pivot.importance === item.pivot.importance).length;
-
-        if (precedingTies >= 2) {
-            // Apply 1% decrement for each tied item beyond the first 2
-            displayPercentage = Math.max(0, rawPercentage - (precedingTies - 1));
-        }
+        // Importance is now stratified in the backend (e.g., 5.0, 4.9, 4.8)
+        // We multiply by 20 to get a 0-100 percentage for the progress bars
+        const displayPercentage = item.pivot.importance * 20;
 
         return (
             <div key={`${item.id}-${item.name}-${index}`} className="space-y-2">

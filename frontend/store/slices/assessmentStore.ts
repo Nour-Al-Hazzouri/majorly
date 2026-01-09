@@ -10,6 +10,7 @@ interface AssessmentState {
     results: (AssessmentResult[] | SpecializationResult[]) | null;
     isSubmitting: boolean;
     activeMajorId: number | null;
+    userId: number | null;
 
     // Actions
     setAssessmentId: (id: number | null) => void;

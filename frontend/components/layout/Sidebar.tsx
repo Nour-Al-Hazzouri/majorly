@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 import { useAuth } from "@/components/providers/AuthProvider";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, LogOut, BookOpen, Sparkles, User, Menu, X } from "lucide-react";
+import { LayoutDashboard, LogOut, BookOpen, Sparkles, User, Menu, X, Info } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -36,6 +36,11 @@ export function Sidebar() {
             href: "/dashboard/profile",
             label: "Profile",
             icon: User,
+        },
+        {
+            href: "/about",
+            label: "About Us",
+            icon: Info,
         },
     ];
 

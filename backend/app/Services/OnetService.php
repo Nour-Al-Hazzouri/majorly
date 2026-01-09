@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Log;
 class OnetService
 {
     private string $apiKey;
-    private string $baseUrl = 'https://services.onetcenter.org/ws/';
+    private string $baseUrl = 'https://api-v2.onetcenter.org/';
 
     public function __construct()
     {
@@ -103,7 +103,7 @@ class OnetService
             ])->get("{$this->baseUrl}online/occupations/{$code}/details/skills");
 
             if ($response->successful()) {
-                return $response->json()['skill'] ?? [];
+                return $response->json()['element'] ?? [];
             }
         } catch (\Exception $e) {
             Log::error("O*NET Skills fetch failed for {$code}: " . $e->getMessage());

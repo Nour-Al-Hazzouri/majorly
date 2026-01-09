@@ -145,18 +145,18 @@ const SkillsStep = ({ section, onNext, onBack }: SkillsStepProps) => {
                 </div>
             </CardContent>
 
-            <CardFooter className="flex justify-between px-10 pb-10 pt-6 border-t border-white/30 backdrop-blur-sm">
+            <CardFooter className="flex flex-col-reverse md:flex-row md:justify-between gap-4 px-6 md:px-10 pb-10 pt-6 border-t border-white/30 backdrop-blur-sm">
                 <Button
                     variant="outline"
                     onClick={onBack}
-                    className="rounded-full px-8 h-12 border-2 text-[#64748b] hover:bg-white"
+                    className="w-full md:w-auto rounded-full px-8 h-12 border-2 text-[#64748b] hover:bg-white"
                 >
                     Back
                 </Button>
                 <Button
                     onClick={onNext}
                     disabled={!canProceed}
-                    className="rounded-full px-10 h-12 font-bold bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] shadow-lg shadow-[#4F46E5]/20 text-white"
+                    className="w-full md:w-auto rounded-full px-10 h-12 font-bold bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] shadow-lg shadow-[#4F46E5]/20 text-white"
                 >
                     {canProceed ? 'Continue' : `Select ${section.min_selections} more`}
                     <ArrowRight className="ml-2 h-4 w-4" />

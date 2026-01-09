@@ -368,14 +368,14 @@ export const CareerDetailModal: React.FC<CareerDetailModalProps> = ({ isOpen, on
                         </ScrollArea>
 
                         {/* Footer Section */}
-                        <div className="p-6 md:p-8 border-t border-slate-100 bg-white flex-shrink-0 flex items-center justify-between">
+                        <div className="p-6 md:p-8 border-t border-slate-100 bg-white flex-shrink-0 flex flex-col-reverse md:flex-row items-center justify-between gap-4">
                             <div className="flex items-center gap-2 text-slate-400">
                                 <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-                                <span className="text-sm font-medium">Validated career data powered by O*NET 29.1</span>
+                                <span className="text-sm font-medium text-center md:text-left">Validated career data powered by O*NET 29.1</span>
                             </div>
                             <Button
                                 size="lg"
-                                className="bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl px-8"
+                                className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl px-8"
                                 onClick={onClose}
                             >
                                 Done Exploring

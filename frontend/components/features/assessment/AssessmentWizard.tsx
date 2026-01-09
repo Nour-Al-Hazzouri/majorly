@@ -33,6 +33,8 @@ const AssessmentWizard = ({ majorId, backLink = '/dashboard', backLabel = 'Back 
         setSections,
         assessmentId,
         setAssessmentId,
+        activeMajorId,
+        setActiveMajorId,
         userId: storeUserId,
         setUserId: setStoreUserId,
         nextStep,
@@ -47,6 +49,11 @@ const AssessmentWizard = ({ majorId, backLink = '/dashboard', backLabel = 'Back 
     } = useAssessmentStore();
 
     const [isLoading, setIsLoading] = useState(true);
+
+    // Initial check for major context mismatch to prevent "glitch" render
+    // If we're on a page for Major A but store has Major B (or no major), we are in a mismatch.
+    // We treat this as a loading state while we reset.
+    const isContextMismatch = (majorId && activeMajorId !== majorId) || (!majorId && activeMajorId !== null);
 
     // Handle account-specific isolation and transitions
     useEffect(() => {
@@ -68,19 +75,29 @@ const AssessmentWizard = ({ majorId, backLink = '/dashboard', backLabel = 'Back 
         }
     }, [user, isAuthenticated, authIsLoading, storeUserId, setStoreUserId, resetStore]);
 
-    // Handle deep dive vs tier1 transitions and resets
+    // Handle Major Context Switching (Deep Dive vs General vs Other Major)
     useEffect(() => {
-        // If results exist but the majorId doesn't match the current mode, reset
-        // This prevents showing old Quick Assessment results on the Deep Dive page
+        if (isContextMismatch) {
+            // Context changed (e.g. User went from CS Deep Dive to Math Deep Dive)
+            // We must reset the store to avoid "150% progress" bugs from previous state.
+            resetStore();
+            // If there is a majorId (Deep Dive), set it as active.
+            // If not (Tier 1), activeMajorId stays null (from reset).
+            if (majorId) {
+                setActiveMajorId(majorId);
+            }
+        }
+    }, [isContextMismatch, majorId, resetStore, setActiveMajorId]);
+
+    // Handle results cleanup if they don't match current context
+    useEffect(() => {
         if (results && results.length > 0) {
             const isTier1Result = 'major_id' in results[0];
             const isDeepDiveResult = 'occupation_id' in results[0] || 'specialization_id' in results[0];
 
             if (majorId && isTier1Result) {
-                // We are on a Deep Dive page but showing Tier 1 results
                 resetStore();
             } else if (!majorId && isDeepDiveResult) {
-                // We are on a Tier 1 page but showing Deep Dive results
                 resetStore();
             }
         }
@@ -160,7 +177,7 @@ const AssessmentWizard = ({ majorId, backLink = '/dashboard', backLabel = 'Back 
         window.scrollTo(0, 0);
     };
 
-    if (isLoading || authIsLoading) {
+    if (isLoading || authIsLoading || isContextMismatch) {
         return (
             <div className="min-h-screen w-full flex items-center justify-center">
                 <div className="flex flex-col items-center gap-4">

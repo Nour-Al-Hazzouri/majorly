@@ -39,19 +39,14 @@ export default function Home() {
               <div className="flex items-center gap-4">
                 <span className="text-sm font-medium text-[#1e293b] hidden md:inline">Welcome, {user?.name}</span>
                 <Button variant="outline" className="rounded-full border-2" onClick={() => logout()}>Log Out</Button>
-                <Button asChild className="rounded-full bg-[#4F46E5] hover:bg-[#4338CA]">
+                <Button asChild className="rounded-full bg-[#4F46E5] hover:bg-[#4338CA] text-white">
                   <Link href="/dashboard">Dashboard</Link>
                 </Button>
               </div>
             ) : (
-              <>
-                <Button asChild variant="ghost" className="text-[#64748b] hover:text-[#4F46E5]">
-                  <Link href="/login">Sign In</Link>
-                </Button>
-                <Button asChild className="rounded-full bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:opacity-90 shadow-md shadow-[#4F46E5]/20">
-                  <Link href="/register">Get Started</Link>
-                </Button>
-              </>
+              <Button asChild className="rounded-full bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:opacity-90 shadow-md shadow-[#4F46E5]/20 text-white px-6">
+                <Link href="/login">Sign In</Link>
+              </Button>
             )}
           </div>
         </div>
@@ -87,11 +82,11 @@ export default function Home() {
               <Button
                 asChild
                 size="lg"
-                className="rounded-full bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:opacity-90 transition-all text-lg px-8 py-7 shadow-xl shadow-[#4F46E5]/25"
+                className="rounded-full bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:opacity-90 transition-all text-lg px-8 py-7 shadow-xl shadow-[#4F46E5]/25 text-white"
               >
                 <Link href="/assessment">
                   Start Free Assessment
-                  <ArrowRight className="ml-2 w-5 h-5" />
+                  <ArrowRight className="ml-2 w-5 h-5 text-white" />
                 </Link>
               </Button>
               <Button

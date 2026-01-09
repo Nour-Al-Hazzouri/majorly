@@ -100,7 +100,7 @@ export const LoginForm = () => {
                 <Button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full h-12 rounded-2xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:opacity-90 transition-all shadow-lg shadow-[#4F46E5]/25"
+                    className="w-full h-12 rounded-2xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:opacity-90 transition-all shadow-lg shadow-[#4F46E5]/25 text-white"
                 >
                     {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Sign In'}
                 </Button>

@@ -16,15 +16,17 @@ class UserController extends Controller
     {
         $user = $request->user();
 
-        // Load assessments with top 3 results per assessment, and saved majors
+        // Load assessments with top 3 results per assessment, and all saved items
         $user->load([
             'assessments' => function ($query) {
                 $query->orderBy('created_at', 'desc');
             },
             'assessments.results' => function ($query) {
-                $query->with('major')->orderBy('rank', 'asc')->limit(3);
+                $query->with(['major', 'specialization'])->orderBy('rank', 'asc')->limit(3);
             },
-            'savedMajors'
+            'savedMajors',
+            'savedSpecializations',
+            'savedOccupations',
         ]);
 
         return response()->json([
@@ -40,7 +42,7 @@ class UserController extends Controller
         $user = $request->user();
 
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255', 'regex:/^[\p{L}\p{M}\s.\'-]+$/u'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
         ]);

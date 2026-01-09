@@ -1,8 +1,8 @@
 'use client';
 
+import { profileUpdateSchema, ProfileUpdateInput } from "@/lib/validations/user";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import {
     Form,
@@ -18,23 +18,6 @@ import api from "@/lib/api";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 
-const profileSchema = z.object({
-    name: z.string().min(2, "Name must be at least 2 characters"),
-    email: z.string().email("Invalid email address"),
-    password: z.string().min(8, "Password must be at least 8 characters").optional().or(z.literal("")),
-    password_confirmation: z.string().optional().or(z.literal("")),
-}).refine((data) => {
-    if (data.password && data.password !== data.password_confirmation) {
-        return false;
-    }
-    return true;
-}, {
-    message: "Passwords do not match",
-    path: ["password_confirmation"],
-});
-
-type ProfileFormValues = z.infer<typeof profileSchema>;
-
 interface ProfileFormProps {
     user: any;
     onUpdate: () => void;
@@ -43,8 +26,8 @@ interface ProfileFormProps {
 export function ProfileForm({ user, onUpdate }: ProfileFormProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const form = useForm<ProfileFormValues>({
-        resolver: zodResolver(profileSchema),
+    const form = useForm<ProfileUpdateInput>({
+        resolver: zodResolver(profileUpdateSchema),
         defaultValues: {
             name: user?.name || "",
             email: user?.email || "",
@@ -53,14 +36,18 @@ export function ProfileForm({ user, onUpdate }: ProfileFormProps) {
         },
     });
 
-    const onSubmit = async (values: ProfileFormValues) => {
+    const onSubmit = async (values: ProfileUpdateInput) => {
         setIsSubmitting(true);
         try {
             // Clean up password if empty
-            const data: any = { ...values };
-            if (!data.password) {
-                delete data.password;
-                delete data.password_confirmation;
+            const data: any = {
+                name: values.name,
+                email: values.email,
+            };
+
+            if (values.password) {
+                data.password = values.password;
+                data.password_confirmation = values.password_confirmation;
             }
 
             await api.patch('/api/profile', data);

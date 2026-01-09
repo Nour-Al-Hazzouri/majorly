@@ -285,12 +285,12 @@ class MatchingService
         $finalResults = $this->ensureUniquePercentages($results->sortByDesc('match_percentage')->values(), 'match_percentage');
 
         // Also ensure O*NET knowledge/skill importance scores are unique within each occupation
-        $finalResults = $finalResults->map(function($res) use ($matchingService) {
+        $finalResults = $finalResults->map(function($res) {
             if (isset($res['occupation'])) {
                 $occ = $res['occupation'];
                 // Standardize: ensure onetKnowledge (used in UI) has unique importance
                 if ($occ->relationLoaded('onetKnowledge')) {
-                    $uniqueKnowledge = $matchingService->ensureUniquePercentages(
+                    $uniqueKnowledge = $this->ensureUniquePercentages(
                         collect($occ->onetKnowledge),
                         'pivot.importance',
                         0.05
@@ -300,7 +300,7 @@ class MatchingService
                 
                 // If onetSkills is also loaded and used, unify it too
                 if ($occ->relationLoaded('onetSkills')) {
-                    $uniqueSkills = $matchingService->ensureUniquePercentages(
+                    $uniqueSkills = $this->ensureUniquePercentages(
                         collect($occ->onetSkills),
                         'importance',
                         0.05

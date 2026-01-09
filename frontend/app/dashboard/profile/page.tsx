@@ -5,11 +5,11 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { useEffect, useState } from "react";
 import api from "@/lib/api";
 import { AssessmentHistory } from "@/components/features/dashboard/AssessmentHistory";
-import { SavedMajors } from "@/components/features/dashboard/SavedMajors";
+import { SavedItems } from "@/components/features/dashboard/SavedItems";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ProfileForm } from "@/components/features/dashboard/ProfileForm";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { User, History, Heart, Settings, LayoutDashboard } from "lucide-react";
+import { User, History, Heart, Settings, LayoutDashboard, BookOpen, Layers, Briefcase } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
 
 export default function ProfilePage() {
@@ -114,7 +114,7 @@ export default function ProfilePage() {
                                 </div>
                                 <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
                                     <h2 className="text-xl font-semibold text-slate-900 mb-6">Saved Majors</h2>
-                                    <SavedMajors majors={profileData.saved_majors?.slice(0, 4)} compact />
+                                    <SavedItems items={profileData.saved_majors?.slice(0, 4)} type="major" compact />
                                 </div>
                             </div>
                         </TabsContent>
@@ -126,8 +126,30 @@ export default function ProfilePage() {
                         </TabsContent>
 
                         <TabsContent value="favorites">
-                            <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
-                                <SavedMajors majors={profileData.saved_majors} />
+                            <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 space-y-12">
+                                <section>
+                                    <h2 className="text-xl font-semibold text-slate-900 mb-6 flex items-center gap-2">
+                                        <BookOpen className="w-5 h-5 text-indigo-600" />
+                                        Saved Majors
+                                    </h2>
+                                    <SavedItems items={profileData.saved_majors} type="major" />
+                                </section>
+
+                                <section className="pt-8 border-t border-slate-100">
+                                    <h2 className="text-xl font-semibold text-slate-900 mb-6 flex items-center gap-2">
+                                        <Layers className="w-5 h-5 text-indigo-600" />
+                                        Saved Specializations
+                                    </h2>
+                                    <SavedItems items={profileData.saved_specializations} type="specialization" />
+                                </section>
+
+                                <section className="pt-8 border-t border-slate-100">
+                                    <h2 className="text-xl font-semibold text-slate-900 mb-6 flex items-center gap-2">
+                                        <Briefcase className="w-5 h-5 text-indigo-600" />
+                                        Saved Career Paths
+                                    </h2>
+                                    <SavedItems items={profileData.saved_occupations} type="occupation" />
+                                </section>
                             </div>
                         </TabsContent>
 

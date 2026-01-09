@@ -223,7 +223,7 @@ class MatchingService
         $userVector = $this->buildUserVector($userSkills);
 
         $results = collect();
-        $occupations = $major->occupations()->with('onetSkills')->get();
+        $occupations = $major->occupations()->with(['onetSkills', 'onetKnowledge'])->get();
 
         // If deep dive lacks skills, try to find user's most recent Tier 1 assessment
         if ($userSkills->isEmpty()) {
@@ -285,16 +285,27 @@ class MatchingService
         $finalResults = $this->ensureUniquePercentages($results->sortByDesc('match_percentage')->values(), 'match_percentage');
 
         // Also ensure O*NET knowledge/skill importance scores are unique within each occupation
-        $finalResults = $finalResults->map(function($res) {
-            if (isset($res['occupation']) && $res['occupation']->onetSkills) {
-                // Deduplicate importance (which is 1-5 scale)
-                // We'll treat it as a percentage (value * 20) for the sake of the deduplicator
-                // then convert back? No, let's just use the importance values directly as numbers.
-                $skills = $res['occupation']->onetSkills;
-                if ($skills instanceof Collection || is_array($skills)) {
-                    $skills = collect($skills)->sortByDesc('importance');
-                    $uniqueSkills = $this->ensureUniquePercentages($skills, 'importance');
-                    $res['occupation']->setRelation('onetSkills', $uniqueSkills);
+        $finalResults = $finalResults->map(function($res) use ($matchingService) {
+            if (isset($res['occupation'])) {
+                $occ = $res['occupation'];
+                // Standardize: ensure onetKnowledge (used in UI) has unique importance
+                if ($occ->relationLoaded('onetKnowledge')) {
+                    $uniqueKnowledge = $matchingService->ensureUniquePercentages(
+                        collect($occ->onetKnowledge),
+                        'pivot.importance',
+                        0.05
+                    );
+                    $occ->setRelation('onetKnowledge', $uniqueKnowledge);
+                }
+                
+                // If onetSkills is also loaded and used, unify it too
+                if ($occ->relationLoaded('onetSkills')) {
+                    $uniqueSkills = $matchingService->ensureUniquePercentages(
+                        collect($occ->onetSkills),
+                        'importance',
+                        0.05
+                    );
+                    $occ->setRelation('onetSkills', $uniqueSkills);
                 }
             }
             return $res;
@@ -321,26 +332,35 @@ class MatchingService
      * Ensure all percentages in the collection are unique by subtracting small deltas from duplicates.
      * Supports nested keys like 'scores.skills'.
      */
-    private function ensureUniquePercentages(Collection $results, string $key): Collection
+    public function ensureUniquePercentages(Collection $results, string $key, float $minGap = 1.0): Collection
     {
         $lastPercentage = null;
-        $minGap = 1.0;
 
         return $results->map(function ($item) use (&$lastPercentage, $minGap, $key) {
             $val = data_get($item, $key);
-            $percentage = round($val, 1);
+            // If we are dealing with importance (1-5), we might want higher precision than round(val, 1)
+            // But let's assume we want to maintain the precision needed for the requested gap.
+            $percentage = $val;
             
-            // Initial clamp
-            $percentage = max(1.0, min(100.0, $percentage));
+            // Percentage clamp is for 0-100 logic. For 1-5 importance, we might need a different clamp
+            // or just skip clamp if it's not match percentages.
+            // For now, let's keep it safe.
+            if ($minGap >= 1.0) {
+                $percentage = round($val, 1);
+                $percentage = max(1.0, min(100.0, $percentage));
+            }
 
             if ($lastPercentage !== null) {
                 // If the gap between this and the last is less than minGap, push it down
                 if ($lastPercentage - $percentage < $minGap) {
-                    $percentage = round($lastPercentage - $minGap, 1);
+                    $percentage = $lastPercentage - $minGap;
+                    // Only round if we are in the "standard" mode
+                    if ($minGap >= 1.0) $percentage = round($percentage, 1);
                 }
             }
             
-            if ($percentage < 1.0) $percentage = 1.0;
+            // Standard clamp for low values
+            if ($minGap >= 1.0 && $percentage < 1.0) $percentage = 1.0;
             
             $lastPercentage = $percentage;
             data_set($item, $key, $percentage);

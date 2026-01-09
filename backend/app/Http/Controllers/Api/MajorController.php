@@ -44,9 +44,10 @@ class MajorController extends Controller
      * Display the specified major.
      *
      * @param string $slug
+     * @param MatchingService $matchingService
      * @return JsonResponse
      */
-    public function show(string $slug)
+    public function show(string $slug, \App\Services\MatchingService $matchingService)
     {
         $major = Major::where('slug', $slug)
             ->with([
@@ -62,7 +63,7 @@ class MajorController extends Controller
                 'occupations.onetKnowledge' => function($q) {
                     $q->select('onet_knowledge.id', 'onet_knowledge.name', 'onet_knowledge.type')
                       ->withPivot('importance', 'level')
-                      ->orderBy('importance', 'desc');
+                      ->orderByPivot('importance', 'desc');
                 },
                 'specializations.skills',
                 'specializations.occupations' => function($q) {
@@ -74,10 +75,30 @@ class MajorController extends Controller
                 'specializations.occupations.onetKnowledge' => function($q) {
                     $q->select('onet_knowledge.id', 'onet_knowledge.name', 'onet_knowledge.type')
                       ->withPivot('importance', 'level')
-                      ->orderBy('importance', 'desc');
+                      ->orderByPivot('importance', 'desc');
                 }
             ])
             ->firstOrFail();
+
+        // Process occupations to ensure unique importance percentages (1% UI gap = 0.05 raw gap)
+        $processOccupations = function($occupations) use ($matchingService) {
+            foreach ($occupations as $occ) {
+                if ($occ->onetKnowledge) {
+                    $uniqueKnowledge = $matchingService->ensureUniquePercentages(
+                        collect($occ->onetKnowledge),
+                        'pivot.importance',
+                        0.05
+                    );
+                    $occ->setRelation('onetKnowledge', $uniqueKnowledge);
+                }
+            }
+        };
+
+        $processOccupations($major->occupations);
+
+        foreach ($major->specializations as $spec) {
+            $processOccupations($spec->occupations);
+        }
 
         return response()->json($major);
     }

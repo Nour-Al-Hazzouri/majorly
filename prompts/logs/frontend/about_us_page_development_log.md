@@ -193,3 +193,21 @@
 #### Files Updated:
 - `frontend/app/page.tsx`: Replaced trust section with quote.
 - `frontend/app/about/page.tsx`: Updated story content and added GitHub link.
+
+## Log Entry #8 - 2026-01-09
+
+### 🎯 User Prompt
+**Context**: Corrected inaccurate phrasing in the "About Us" story.
+**Request**:
+> "I saw too many talented individuals switch majors late in their degree or graduate into careers that didn't align with their true potential." isn't quite accurate, what I saw was confusion and unsureness, don't add things I didn't say
+
+### 🤖 AI Response Summary
+**Action Taken**:
+- **About Us Page**: Updated the story text to remove the inaccurate phrasing about "switching majors late" and replaced it with the user's direct observation of "confusion and unsureness".
+
+**Reasoning**:
+- **Accuracy & Honesty**: It is critical to reflect the user's actual journey and observations without adding external interpretations that weren't expressed.
+
+### 📁 Files Modified/Created
+#### Files Updated:
+- `frontend/app/about/page.tsx`: Refined story content.

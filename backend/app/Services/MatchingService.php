@@ -48,8 +48,13 @@ class MatchingService
             ];
         });
 
-        // Rank, ensure unique percentages, and save top 7
-        $rankedResults = $this->ensureUniquePercentages($results->sortByDesc('match_percentage')->values())->take(7);
+        // Rank, ensure unique overall percentages, and save top 7
+        $rankedResults = $this->ensureUniquePercentages($results->sortByDesc('match_percentage')->values(), 'match_percentage')->take(7);
+
+        // Also ensure sub-scores are unique across the ranked results
+        $rankedResults = $this->ensureUniquePercentages($rankedResults, 'scores.skills');
+        $rankedResults = $this->ensureUniquePercentages($rankedResults, 'scores.interests');
+        $rankedResults = $this->ensureUniquePercentages($rankedResults, 'scores.strengths');
 
         $assessment->results()->delete();
 
@@ -97,19 +102,27 @@ class MatchingService
 
         // Mapping rules for Lightcast skills to O*NET categories
         $mapping = [
-            'Programming' => ['programming', 'coding', 'software', 'developer', 'python', 'java', 'script', 'html', 'css', 'sql', 'php'],
-            'Mathematics' => ['math', 'statistics', 'calculus', 'algebra', 'quantitative', 'analytics', 'data science'],
-            'Critical Thinking' => ['critical thinking', 'problem solving', 'analysis', 'logic'],
-            'Reading Comprehension' => ['reading', 'research', 'literacy'],
-            'Writing' => ['writing', 'documentation', 'editing', 'content'],
-            'Speaking' => ['speaking', 'presentation', 'communication', 'public speaking'],
-            'Active Listening' => ['listening', 'empathy', 'interpersonal'],
-            'Science' => ['science', 'biology', 'chemistry', 'physics', 'laboratory', 'medicine'],
+            'Programming' => ['programming', 'coding', 'software', 'developer', 'python', 'java', 'script', 'html', 'css', 'sql', 'php', 'c++', 'c#', 'ruby', 'swift', 'go', 'rust', 'typescript', 'react', 'vue', 'angular', 'node', 'api', 'backend', 'frontend', 'stack'],
+            'Mathematics' => ['mathematics', 'math', 'algebra', 'calculus', 'statistics', 'quantitative', 'geometry', 'arithmetic', 'logic', 'analytics', 'data science'],
+            'Science' => ['science', 'biology', 'chemistry', 'physics', 'laboratory', 'research', 'scientific', 'medical', 'clinical', 'medicine'],
+            'Critical Thinking' => ['critical thinking', 'problem solving', 'analysis', 'analytical', 'evaluation', 'reasoning', 'debug', 'troubleshoot', 'logic'],
+            'Speaking' => ['speaking', 'presentation', 'communication', 'public speaking', 'verbal', 'articulate'],
+            'Writing' => ['writing', 'documentation', 'report', 'content', 'editorial', 'technical writing', 'journalism', 'editing'],
+            'Reading Comprehension' => ['reading', 'comprehension', 'literacy', 'research', 'literature'],
+            'Active Listening' => ['listening', 'empathy', 'patient', 'counseling', 'client service', 'interpersonal'],
+            'Coordination' => ['coordination', 'teamwork', 'collaboration', 'project management', 'planning', 'leadership', 'scrum', 'agile'],
+            'Social Perceptiveness' => ['social', 'psychology', 'human behavior', 'counseling', 'therapy', 'sociate', 'community'],
+            'Systems Analysis' => ['systems analysis', 'engineering', 'it systems', 'cloud architecture', 'infrastructure', 'database', 'network'],
+            'Complex Problem Solving' => ['complex', 'troubleshooting', 'innovation', 'strategic', 'architecture'],
+            'Management of Personnel Resources' => ['management', 'leadership', 'hiring', 'supervision', 'coaching', 'mentor', 'team lead'],
+            'Management of Financial Resources' => ['finance', 'budget', 'accounting', 'investment', 'economic', 'pricing'],
+            'Negotiation' => ['negotiation', 'sales', 'contract', 'bargaining', 'procurement'],
+            'Persuasion' => ['persuasion', 'marketing', 'advertising', 'influence', 'advocacy', 'sales'],
+            'Instructing' => ['instructing', 'teaching', 'training', 'educator', 'workshop', 'coaching'],
+            'Service Orientation' => ['service', 'customer', 'hospitality', 'support', 'help desk'],
+            'Operations Analysis' => ['operations', 'workflow', 'efficiency', 'logistics', 'supply chain'],
             'Technology Design' => ['design', 'ui', 'ux', 'architecture', 'prototyping', 'creative'],
             'Judgment and Decision Making' => ['judgment', 'decision making', 'prioritization', 'management'],
-            'Systems Analysis' => ['systems analysis', 'engineering', 'it systems', 'cloud architecture'],
-            'Coordination' => ['coordination', 'teamwork', 'collaboration', 'project management'],
-            'Social Perceptiveness' => ['social', 'psychology', 'human behavior', 'counseling'],
             'Repairing' => ['repair', 'technician', 'maintenance', 'mechanical'],
             'Equipment Selection' => ['equipment', 'procurement', 'hardware'],
         ];
@@ -212,6 +225,37 @@ class MatchingService
         $results = collect();
         $occupations = $major->occupations()->with('onetSkills')->get();
 
+        // If deep dive lacks skills, try to find user's most recent Tier 1 assessment
+        if ($userSkills->isEmpty()) {
+            $lastTier1 = Assessment::where('type', 'tier1')
+                ->where('status', 'completed')
+                ->where(function($q) use ($assessment) {
+                    if ($assessment->user_id) {
+                        $q->where('user_id', $assessment->user_id);
+                    } else {
+                        // For guests, we can't easily track without a common session/cookie
+                        // but we can try to find the most recent guest assessment created just before this one
+                        $q->whereNull('user_id')
+                          ->where('id', '<', $assessment->id);
+                    }
+                })
+                ->latest()
+                ->first();
+            
+            if ($lastTier1) {
+                $lastResponses = $lastTier1->responses()->pluck('response_value', 'question_id');
+                $userSkillsCurrent = collect($lastResponses['skills_current'] ?? []);
+                $userSkillsAspiration = collect($lastResponses['skills_aspiration'] ?? []);
+                $userSkills = $userSkillsCurrent->merge($userSkillsAspiration)
+                    ->map(fn($skill) => is_array($skill) ? ($skill['name'] ?? '') : (is_object($skill) ? ($skill->name ?? '') : $skill))
+                    ->unique()
+                    ->filter();
+                    
+                // Re-build vector with found skills
+                $userVector = $this->buildUserVector($userSkills);
+            }
+        }
+
         foreach ($occupations as $occupation) {
             // Occupation profile vector
             $occVector = array_fill_keys($this->getOnetSkillCategories(), 0.0);
@@ -238,7 +282,23 @@ class MatchingService
         }
 
         // Rank and ensure unique percentages
-        $finalResults = $this->ensureUniquePercentages($results->sortByDesc('match_percentage')->values());
+        $finalResults = $this->ensureUniquePercentages($results->sortByDesc('match_percentage')->values(), 'match_percentage');
+
+        // Also ensure O*NET knowledge/skill importance scores are unique within each occupation
+        $finalResults = $finalResults->map(function($res) {
+            if (isset($res['occupation']) && $res['occupation']->onetSkills) {
+                // Deduplicate importance (which is 1-5 scale)
+                // We'll treat it as a percentage (value * 20) for the sake of the deduplicator
+                // then convert back? No, let's just use the importance values directly as numbers.
+                $skills = $res['occupation']->onetSkills;
+                if ($skills instanceof Collection || is_array($skills)) {
+                    $skills = collect($skills)->sortByDesc('importance');
+                    $uniqueSkills = $this->ensureUniquePercentages($skills, 'importance');
+                    $res['occupation']->setRelation('onetSkills', $uniqueSkills);
+                }
+            }
+            return $res;
+        });
 
         // Save results
         $assessment->results()->delete();
@@ -259,22 +319,31 @@ class MatchingService
 
     /**
      * Ensure all percentages in the collection are unique by subtracting small deltas from duplicates.
+     * Supports nested keys like 'scores.skills'.
      */
-    private function ensureUniquePercentages(Collection $results): Collection
+    private function ensureUniquePercentages(Collection $results, string $key): Collection
     {
-        $seenPercentages = [];
-        $delta = 0.1;
+        $lastPercentage = null;
+        $minGap = 1.0;
 
-        return $results->map(function ($item) use (&$seenPercentages, $delta) {
-            $percentage = round($item['match_percentage'], 1);
+        return $results->map(function ($item) use (&$lastPercentage, $minGap, $key) {
+            $val = data_get($item, $key);
+            $percentage = round($val, 1);
             
-            while (in_array($percentage, $seenPercentages)) {
-                $percentage = round($percentage - $delta, 1);
+            // Initial clamp
+            $percentage = max(1.0, min(100.0, $percentage));
+
+            if ($lastPercentage !== null) {
+                // If the gap between this and the last is less than minGap, push it down
+                if ($lastPercentage - $percentage < $minGap) {
+                    $percentage = round($lastPercentage - $minGap, 1);
+                }
             }
             
-            $percentage = max(1, min(100, $percentage));
-            $seenPercentages[] = $percentage;
-            $item['match_percentage'] = $percentage;
+            if ($percentage < 1.0) $percentage = 1.0;
+            
+            $lastPercentage = $percentage;
+            data_set($item, $key, $percentage);
             
             return $item;
         });

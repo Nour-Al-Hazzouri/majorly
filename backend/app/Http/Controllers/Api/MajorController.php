@@ -51,7 +51,7 @@ class MajorController extends Controller
         $major = Major::where('slug', $slug)
             ->with([
                 'skills' => function($q) {
-                    $q->distinct()->limit(10);
+                    $q->distinct()->limit(20);
                 },
                 'occupations' => function($q) {
                     $q->select('occupations.id', 'occupations.name', 'occupations.code', 'occupations.soc_code', 'occupations.description', 'occupations.median_salary', 'occupations.job_outlook', 'occupations.tasks');
@@ -110,7 +110,7 @@ class MajorController extends Controller
     public function favorites()
     {
         $favorites = Auth::user()->savedMajors()->with(['skills' => function($q) {
-            $q->limit(10);
+            $q->limit(20);
         }, 'occupations'])->get();
         
         return response()->json([

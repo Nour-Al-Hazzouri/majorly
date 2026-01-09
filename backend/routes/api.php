@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\PasswordResetController;
 use App\Http\Controllers\Api\SkillController;
 use App\Http\Controllers\Api\AssessmentController;
 use Illuminate\Http\Request;
@@ -11,8 +10,6 @@ use Illuminate\Support\Facades\Route;
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout']);
-Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink']);
-Route::post('/reset-password', [PasswordResetController::class, 'reset']);
 
 // Skills Search
 Route::get('/skills', [SkillController::class, 'index']);

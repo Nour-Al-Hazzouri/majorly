@@ -73,9 +73,6 @@ export const LoginForm = () => {
                 <div className="space-y-2">
                     <div className="flex justify-between items-center">
                         <Label htmlFor="password">Password</Label>
-                        <Link href="/forgot-password" className="text-sm text-[#4F46E5] hover:underline">
-                            Forgot?
-                        </Link>
                     </div>
                     <div className="relative">
                         <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#64748b]" />

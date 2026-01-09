@@ -156,7 +156,7 @@ const SkillsStep = ({ section, onNext, onBack }: SkillsStepProps) => {
                 <Button
                     onClick={onNext}
                     disabled={!canProceed}
-                    className="rounded-full px-10 h-12 font-bold bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] shadow-lg shadow-[#4F46E5]/20"
+                    className="rounded-full px-10 h-12 font-bold bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] shadow-lg shadow-[#4F46E5]/20 text-white"
                 >
                     {canProceed ? 'Continue' : `Select ${section.min_selections} more`}
                     <ArrowRight className="ml-2 h-4 w-4" />

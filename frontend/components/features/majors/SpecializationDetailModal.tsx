@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     X,
@@ -11,12 +11,16 @@ import {
     CheckCircle2,
     Layers,
     DollarSign,
-    TrendingUp
+    TrendingUp,
+    Heart
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { CareerDetailModal } from './CareerDetailModal';
+import { toggleFavorite, getFavoriteStatus } from '@/lib/api';
+import { useAuth } from '@/components/providers/AuthProvider';
+import { cn } from '@/lib/utils';
 
 interface Skill {
     id: number;
@@ -53,6 +57,38 @@ interface SpecializationDetailModalProps {
 export const SpecializationDetailModal: React.FC<SpecializationDetailModalProps> = ({ isOpen, onClose, specialization }) => {
     const [selectedCareer, setSelectedCareer] = useState<Occupation | null>(null);
     const [isCareerModalOpen, setIsCareerModalOpen] = useState(false);
+    const [isFavorited, setIsFavorited] = useState(false);
+    const [favLoading, setFavLoading] = useState(false);
+    const { user } = useAuth();
+
+    useEffect(() => {
+        const checkFavoriteStatus = async () => {
+            if (specialization && user && isOpen) {
+                try {
+                    const response = await getFavoriteStatus('specialization', specialization.id);
+                    setIsFavorited(response.data.favorited);
+                } catch (error) {
+                    console.error("Failed to check favorite status", error);
+                }
+            }
+        };
+
+        checkFavoriteStatus();
+    }, [specialization, user, isOpen]);
+
+    const handleToggleFavorite = async () => {
+        if (!specialization || favLoading) return;
+
+        try {
+            setFavLoading(true);
+            const response = await toggleFavorite('specialization', specialization.id);
+            setIsFavorited(response.data.favorited);
+        } catch (error) {
+            console.error("Failed to toggle favorite", error);
+        } finally {
+            setFavLoading(false);
+        }
+    };
 
     if (!specialization) return null;
 
@@ -95,12 +131,27 @@ export const SpecializationDetailModal: React.FC<SpecializationDetailModalProps>
                                 <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/20 rounded-full blur-[100px] -mr-32 -mt-32" />
                             </div>
 
-                            <button
-                                onClick={onClose}
-                                className="absolute top-4 right-4 md:top-8 md:right-8 z-50 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors backdrop-blur-md"
-                            >
-                                <X className="w-6 h-6" />
-                            </button>
+                            <div className="absolute top-4 right-4 md:top-8 md:right-8 z-50 flex items-center gap-3">
+                                <Button
+                                    size="icon"
+                                    onClick={handleToggleFavorite}
+                                    disabled={favLoading}
+                                    className={cn(
+                                        "rounded-full transition-all duration-300 backdrop-blur-md border border-white/10",
+                                        isFavorited
+                                            ? "bg-rose-500 hover:bg-rose-600 text-white"
+                                            : "bg-white/10 hover:bg-white/20 text-white"
+                                    )}
+                                >
+                                    <Heart className={cn("w-5 h-5", isFavorited && "fill-current")} />
+                                </Button>
+                                <button
+                                    onClick={onClose}
+                                    className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors backdrop-blur-md"
+                                >
+                                    <X className="w-6 h-6" />
+                                </button>
+                            </div>
 
                             <div className="absolute inset-0 p-8 md:p-12 flex flex-col justify-end">
                                 <div className="flex items-center gap-3 mb-4">

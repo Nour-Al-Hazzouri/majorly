@@ -21,9 +21,11 @@ import { AssessmentResult, SpecializationResult } from '@/types';
 
 interface AssessmentWizardProps {
     majorId?: number;
+    backLink?: string;
+    backLabel?: string;
 }
 
-const AssessmentWizard = ({ majorId }: AssessmentWizardProps) => {
+const AssessmentWizard = ({ majorId, backLink = '/dashboard', backLabel = 'Back to Dashboard' }: AssessmentWizardProps) => {
     const { user, isAuthenticated, isLoading: authIsLoading } = useAuth();
     const {
         currentStep,
@@ -180,17 +182,17 @@ const AssessmentWizard = ({ majorId }: AssessmentWizardProps) => {
             {/* Simple Nav */}
             <nav className="border-b border-white/30 backdrop-blur-md bg-white/50 sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-                    <Link href="/" className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] flex items-center justify-center shadow-md">
-                            <Sparkles className="w-5 h-5 text-white" />
+                    <Link href="/dashboard" className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                            <Sparkles className="w-6 h-6 text-white" />
                         </div>
-                        <span className="text-xl font-bold bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] bg-clip-text text-transparent">
+                        <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#4F46E5] to-[#7C3AED]">
                             Majorly
                         </span>
                     </Link>
                     <div className="flex items-center gap-4">
                         <Button variant="ghost" size="sm" asChild className="text-[#64748b]">
-                            <Link href="/">Exit</Link>
+                            <Link href={backLink}>{backLabel}</Link>
                         </Button>
                     </div>
                 </div>

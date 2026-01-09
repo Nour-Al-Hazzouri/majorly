@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     X,
@@ -13,12 +13,15 @@ import {
     CheckCircle2,
     Calendar,
     Globe,
-    ExternalLink
+    ExternalLink,
+    Heart
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
+import { toggleFavorite, getFavoriteStatus } from '@/lib/api';
+import { useAuth } from '@/components/providers/AuthProvider';
 
 interface OnetKnowledge {
     id: number;
@@ -56,6 +59,39 @@ interface CareerDetailModalProps {
 }
 
 export const CareerDetailModal: React.FC<CareerDetailModalProps> = ({ isOpen, onClose, career }) => {
+    const [isFavorited, setIsFavorited] = useState(false);
+    const [favLoading, setFavLoading] = useState(false);
+    const { user } = useAuth();
+
+    useEffect(() => {
+        const checkFavoriteStatus = async () => {
+            if (career && user && isOpen) {
+                try {
+                    const response = await getFavoriteStatus('occupation', career.id);
+                    setIsFavorited(response.data.favorited);
+                } catch (error) {
+                    console.error("Failed to check favorite status", error);
+                }
+            }
+        };
+
+        checkFavoriteStatus();
+    }, [career, user, isOpen]);
+
+    const handleToggleFavorite = async () => {
+        if (!career || favLoading) return;
+
+        try {
+            setFavLoading(true);
+            const response = await toggleFavorite('occupation', career.id);
+            setIsFavorited(response.data.favorited);
+        } catch (error) {
+            console.error("Failed to toggle favorite", error);
+        } finally {
+            setFavLoading(false);
+        }
+    };
+
     if (!career) return null;
 
     const parsedTasks = typeof career.tasks === 'string'
@@ -144,12 +180,27 @@ export const CareerDetailModal: React.FC<CareerDetailModalProps> = ({ isOpen, on
                                 <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-600/20 rounded-full blur-[80px] -ml-24 -mb-24" />
                             </div>
 
-                            <button
-                                onClick={onClose}
-                                className="absolute top-4 right-4 md:top-8 md:right-8 z-50 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors backdrop-blur-md"
-                            >
-                                <X className="w-6 h-6" />
-                            </button>
+                            <div className="absolute top-4 right-4 md:top-8 md:right-8 z-50 flex items-center gap-3">
+                                <Button
+                                    size="icon"
+                                    onClick={handleToggleFavorite}
+                                    disabled={favLoading}
+                                    className={cn(
+                                        "rounded-full transition-all duration-300 backdrop-blur-md border border-white/10",
+                                        isFavorited
+                                            ? "bg-rose-500 hover:bg-rose-600 text-white"
+                                            : "bg-white/10 hover:bg-white/20 text-white"
+                                    )}
+                                >
+                                    <Heart className={cn("w-5 h-5", isFavorited && "fill-current")} />
+                                </Button>
+                                <button
+                                    onClick={onClose}
+                                    className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors backdrop-blur-md"
+                                >
+                                    <X className="w-6 h-6" />
+                                </button>
+                            </div>
 
                             <div className="absolute inset-0 p-8 md:p-12 flex flex-col justify-end">
                                 <div className="flex flex-wrap items-center gap-2 mb-4">

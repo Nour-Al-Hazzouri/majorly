@@ -111,7 +111,7 @@ const RatingStep = ({ section, onNext, onBack, isLastStep, isSubmitting }: Ratin
                 <Button
                     onClick={onNext}
                     disabled={!allAnswered || isSubmitting}
-                    className="rounded-full px-10 h-12 font-bold bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] shadow-lg shadow-[#4F46E5]/20"
+                    className="rounded-full px-10 h-12 font-bold bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] shadow-lg shadow-[#4F46E5]/20 text-white"
                 >
                     {isSubmitting ? (
                         <Loader2 className="mr-2 h-5 w-5 animate-spin" />

@@ -37,10 +37,12 @@ export function Sidebar() {
 
     return (
         <aside className="fixed left-0 top-0 h-full w-64 bg-white border-r border-slate-200 p-6 hidden md:flex flex-col">
-            <div className="flex items-center gap-2 mb-10">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#4F46E5] to-[#7C3AED]" />
-                <span className="text-xl font-bold text-slate-900">Majorly</span>
-            </div>
+            <Link href="/dashboard" className="flex items-center gap-3 mb-10">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] flex items-center justify-center shadow-lg shadow-[#4F46E5]/30">
+                    <Sparkles className="w-6 h-6 text-white" />
+                </div>
+                <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#4F46E5] to-[#7C3AED]">Majorly</span>
+            </Link>
 
             <nav className="space-y-2 flex-grow">
                 {navItems.map((item) => {

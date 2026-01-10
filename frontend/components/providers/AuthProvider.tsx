@@ -58,7 +58,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setAuthToken(token);
         setUser(userData);
         useAssessmentStore.getState().setUserId(userData.id);
-        router.push('/dashboard');
+        // Use replace to avoid back-button issues and force a full navigation
+        window.location.href = '/dashboard';
     };
 
     const register = async (data: RegisterInput) => {
@@ -67,7 +68,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setAuthToken(token);
         setUser(userData);
         useAssessmentStore.getState().setUserId(userData.id);
-        router.push('/dashboard');
+        // Use replace to avoid back-button issues and force a full navigation
+        window.location.href = '/dashboard';
     };
 
     const logout = async () => {

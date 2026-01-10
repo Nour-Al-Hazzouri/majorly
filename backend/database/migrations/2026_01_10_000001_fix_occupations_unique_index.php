@@ -18,16 +18,28 @@ return new class extends Migration
             }
         });
 
+        // Clear any old records that don't have a soc_code to prevent NOT NULL and UNIQUE violations
+        DB::table('occupations')->whereNull('soc_code')->delete();
+
         Schema::table('occupations', function (Blueprint $table) {
-             $table->string('soc_code')->change()->unique();
+             // Explicitly mark as nullable() to avoid Laravel defaulting to NOT NULL on Postgres
+             $table->string('soc_code')->nullable()->unique()->change();
         });
 
         // Fix Skills
+        // Clear duplicates if any exist before adding unique constraint
+        $duplicates = DB::table('skills')
+            ->select('name')
+            ->groupBy('name')
+            ->havingRaw('COUNT(*) > 1')
+            ->pluck('name');
+        
+        if ($duplicates->isNotEmpty()) {
+            DB::table('skills')->whereIn('name', $duplicates)->delete();
+        }
+
         Schema::table('skills', function (Blueprint $table) {
-            // Check if unique index exists (Postgres uses a specific naming convention but unique() handles it)
-            // To be safe, we just try to add it. If it fails, we know it exists.
-            // But better to clear duplicates first if any.
-            $table->string('name')->change()->unique();
+            $table->string('name')->nullable()->unique()->change();
         });
     }
 
@@ -37,7 +49,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('occupations', function (Blueprint $table) {
-            $table->dropUnique(['soc_code']);
+            $table->dropUnique(['occupations_soc_code_unique']);
         });
         Schema::table('skills', function (Blueprint $table) {
             $table->dropUnique(['skills_name_unique']);

@@ -148,17 +148,30 @@ const AssessmentWizard = ({ majorId, backLink = '/dashboard', backLabel = 'Back 
     const handleSaveProgress = async () => {
         if (!assessmentId) return;
 
+        if (isSubmitting) {
+            toast.error('Saving your progress. Please wait...');
+            return;
+        }
+
+        setIsSubmitting(true);
         try {
             await api.patch(`/api/assessments/${assessmentId}`, { responses });
             toast.success('Progress saved');
             nextStep();
         } catch (error) {
             toast.error('Failed to save progress');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
     const handleSubmit = async () => {
         if (!assessmentId) return;
+
+        if (isSubmitting) {
+            toast.error('Submitting your results. Please wait...');
+            return;
+        }
 
         setIsSubmitting(true);
         try {

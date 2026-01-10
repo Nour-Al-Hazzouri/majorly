@@ -156,101 +156,68 @@ export const SpecializationDetailModal: React.FC<SpecializationDetailModalProps>
 
                         {/* Content Section */}
                         <ScrollArea className="flex-grow">
-                            <div className="p-8 md:p-12 grid grid-cols-1 lg:grid-cols-3 gap-12">
-                                <div className="lg:col-span-2 space-y-12">
-                                    {/* Description */}
-                                    <section>
-                                        <div className="flex items-center gap-3 mb-6">
-                                            <div className="p-2.5 bg-indigo-50 text-indigo-600 rounded-2xl">
-                                                <Target className="w-6 h-6" />
-                                            </div>
-                                            <h3 className="text-2xl font-bold text-slate-900 tracking-tight">Field Focus</h3>
+                            <div className="p-8 md:p-12 max-w-4xl mx-auto space-y-12">
+                                {/* Description */}
+                                <section>
+                                    <div className="flex items-center gap-3 mb-6">
+                                        <div className="p-2.5 bg-indigo-50 text-indigo-600 rounded-2xl">
+                                            <Target className="w-6 h-6" />
                                         </div>
-                                        <p className="text-lg text-slate-600 leading-relaxed font-medium">
-                                            {specialization.description}
-                                        </p>
-                                    </section>
+                                        <h3 className="text-2xl font-bold text-slate-900 tracking-tight">Field Focus</h3>
+                                    </div>
+                                    <p className="text-lg text-slate-600 leading-relaxed font-medium">
+                                        {specialization.description}
+                                    </p>
+                                </section>
 
-                                    {/* Typical Career Paths */}
+                                {/* Typical Career Paths */}
+                                <section>
+                                    <div className="flex items-center gap-3 mb-6">
+                                        <div className="p-2.5 bg-blue-50 text-blue-600 rounded-2xl">
+                                            <Briefcase className="w-6 h-6" />
+                                        </div>
+                                        <h3 className="text-2xl font-bold text-slate-900 tracking-tight">Possible Career Paths</h3>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {specialization.occupations.map((occ) => (
+                                            <div
+                                                key={`${occ.id}-${occ.code || occ.name}`}
+                                                onClick={() => handleCareerClick(occ)}
+                                                className="group p-6 rounded-2xl bg-slate-50 border border-slate-100 hover:border-blue-200 hover:bg-white hover:shadow-md transition-all cursor-pointer flex flex-col justify-between"
+                                            >
+                                                <div>
+                                                    <p className="text-sm text-slate-500 line-clamp-2">{occ.description}</p>
+                                                </div>
+                                                <div className="flex items-center justify-end mt-2 pt-2 border-t border-slate-100">
+                                                    <ArrowRight className="w-4 h-4 text-blue-500 transition-transform group-hover:translate-x-1" />
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </section>
+
+                                {/* Skills Section */}
+                                {specialization.skills.length > 0 && (
                                     <section>
                                         <div className="flex items-center gap-3 mb-6">
-                                            <div className="p-2.5 bg-blue-50 text-blue-600 rounded-2xl">
-                                                <Briefcase className="w-6 h-6" />
+                                            <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-2xl">
+                                                <Zap className="w-6 h-6" />
                                             </div>
-                                            <h3 className="text-2xl font-bold text-slate-900 tracking-tight">Possible Career Paths</h3>
+                                            <h3 className="text-2xl font-bold text-slate-900 tracking-tight">Essential Skills for {specialization.name}</h3>
                                         </div>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            {specialization.occupations.map((occ) => (
-                                                <div
-                                                    key={`${occ.id}-${occ.code || occ.name}`}
-                                                    onClick={() => handleCareerClick(occ)}
-                                                    className="group p-6 rounded-2xl bg-slate-50 border border-slate-100 hover:border-blue-200 hover:bg-white hover:shadow-md transition-all cursor-pointer flex flex-col justify-between"
+                                        <div className="flex flex-wrap gap-3">
+                                            {specialization.skills.map(skill => (
+                                                <Badge
+                                                    key={`${skill.id}-${skill.name}`}
+                                                    variant="secondary"
+                                                    className="px-4 py-2 text-sm font-bold bg-white text-slate-700 border border-slate-100 shadow-sm"
                                                 >
-                                                    <div>
-                                                        <p className="text-sm text-slate-500 line-clamp-2">{occ.description}</p>
-                                                    </div>
-                                                    <div className="flex items-center justify-end mt-2 pt-2 border-t border-slate-100">
-                                                        <ArrowRight className="w-4 h-4 text-blue-500 transition-transform group-hover:translate-x-1" />
-                                                    </div>
-                                                </div>
+                                                    {skill.name}
+                                                </Badge>
                                             ))}
                                         </div>
                                     </section>
-
-                                    {/* Skills Section */}
-                                    {specialization.skills.length > 0 && (
-                                        <section>
-                                            <div className="flex items-center gap-3 mb-6">
-                                                <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-2xl">
-                                                    <Zap className="w-6 h-6" />
-                                                </div>
-                                                <h3 className="text-2xl font-bold text-slate-900 tracking-tight">Essential Skills for {specialization.name}</h3>
-                                            </div>
-                                            <div className="flex flex-wrap gap-3">
-                                                {specialization.skills.map(skill => (
-                                                    <Badge
-                                                        key={`${skill.id}-${skill.name}`}
-                                                        variant="secondary"
-                                                        className="px-4 py-2 text-sm font-bold bg-white text-slate-700 border border-slate-100 shadow-sm"
-                                                    >
-                                                        {skill.name}
-                                                    </Badge>
-                                                ))}
-                                            </div>
-                                        </section>
-                                    )}
-                                </div>
-
-                                {/* Sidebar Stats */}
-                                <div className="space-y-8">
-                                    <div className="bg-indigo-900 rounded-3xl p-8 text-white relative overflow-hidden">
-                                        <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 bg-white/5 rounded-full blur-2xl" />
-
-                                        <div className="space-y-6 relative z-10">
-                                            <p className="text-slate-400 text-xs font-medium italic">
-                                                Exploring market potential and academic relevance.
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <div className="p-8 rounded-3xl bg-slate-50 border border-slate-100">
-                                        <h4 className="text-sm font-bold text-slate-900 uppercase tracking-widest mb-4">Why choose this?</h4>
-                                        <ul className="space-y-4">
-                                            <li className="flex gap-3 text-sm text-slate-600 font-medium leading-relaxed">
-                                                <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
-                                                Focus on a specific niche with higher specialization.
-                                            </li>
-                                            <li className="flex gap-3 text-sm text-slate-600 font-medium leading-relaxed">
-                                                <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
-                                                Targeted career paths with clear entry requirements.
-                                            </li>
-                                            <li className="flex gap-3 text-sm text-slate-600 font-medium leading-relaxed">
-                                                <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
-                                                Strong alignment with industry-specific technology.
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
+                                )}
                             </div>
                         </ScrollArea>
 

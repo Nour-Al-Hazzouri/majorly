@@ -17,18 +17,20 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::firstOrCreate(
-            ['email' => 'test@example.com'],
-            [
-                'name' => 'Test User',
-                'password' => bcrypt('password'), // Add a default password
-            ]
-        );
-
-        $this->call([
-            OccupationSeeder::class,
-            MajorSeeder::class,
-            SpecializationSeeder::class,
+        // Create Test User
+        User::firstOrCreate([
+            'email' => 'test@example.com',
+        ], [
+            'name' => 'Test User',
+            'password' => bcrypt('password'),
         ]);
+
+        // Run the robust data import pipeline
+        // This replaces individual seeders with a comprehensive O*NET + CIP import
+        $this->command->info('Downloading Open Data...');
+        \Illuminate\Support\Facades\Artisan::call('majorly:download-open-data', [], $this->command->getOutput());
+        
+        $this->command->info('Importing Open Data (this may take a while)...');
+        \Illuminate\Support\Facades\Artisan::call('majorly:import-open-data', [], $this->command->getOutput());
     }
 }

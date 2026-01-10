@@ -23,6 +23,9 @@ class ImportOpenData extends Command
 
         DB::beginTransaction();
         try {
+            // 0. Import CIP Crosswalk (Added based on file existence)
+            $this->importCrosswalk($path);
+
             // 1. O*NET Occupations
             $this->importOnetOccupations($onetPath);
             
@@ -190,7 +193,10 @@ class ImportOpenData extends Command
     private function importCrosswalk($path)
     {
         $file = $path . '/CIP2020_SOC2018_Crosswalk.csv';
-        if (!file_exists($file)) throw new \Exception("Crosswalk not found");
+        if (!file_exists($file)) {
+            $this->warn("Crosswalk file not found at $file - skipping.");
+            return;
+        }
         
         $this->info("Parsing Crosswalk...");
         // Ensure we remove BOM if present
@@ -294,7 +300,6 @@ class ImportOpenData extends Command
             '31-1' => 'Nursing & Medical Support',
             '31-2' => 'Occupational & Physical Therapy Assistants',
             '31-9' => 'Other Healthcare Support',
-            // ... add more as needed, or fallback to generic
         ];
         
         foreach ($socMajorGroups as $code => $name) {

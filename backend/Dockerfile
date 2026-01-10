@@ -54,5 +54,10 @@ RUN sed -i 's/80/${PORT}/g' /etc/apache2/sites-available/000-default.conf /etc/a
 # Expose port (just documentation, real port comes from ENV)
 EXPOSE 80
 
-# Start Apache
-CMD ["apache2-foreground"]
+# Copy entrypoint script
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+# Start using the entrypoint script
+ENTRYPOINT ["entrypoint.sh"]
+

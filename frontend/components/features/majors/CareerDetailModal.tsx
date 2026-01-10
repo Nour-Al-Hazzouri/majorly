@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     X,
-    TrendingUp,
     Briefcase,
     Target,
     Zap,
@@ -194,12 +193,6 @@ export const CareerDetailModal: React.FC<CareerDetailModalProps> = ({ isOpen, on
                                     <Badge variant="secondary" className="bg-blue-600 text-white border-none px-3 py-1 font-bold tracking-wide uppercase text-[10px]">
                                         {career.code}
                                     </Badge>
-                                    {career.job_outlook && (
-                                        <Badge variant="outline" className="bg-white/10 text-blue-200 border-blue-400/30 font-medium">
-                                            <TrendingUp className="w-3.5 h-3.5 mr-1.5" />
-                                            Outlook: {career.job_outlook}
-                                        </Badge>
-                                    )}
                                 </div>
                                 <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight leading-tight max-w-3xl">
                                     {career.name}
@@ -289,15 +282,9 @@ export const CareerDetailModal: React.FC<CareerDetailModalProps> = ({ isOpen, on
                                         <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 bg-white/5 rounded-full blur-2xl" />
 
                                         <div className="space-y-6 relative z-10">
-                                            <div>
-                                                <div className="flex items-center gap-2 text-slate-400 mb-2">
-                                                    <TrendingUp className="w-4 h-4" />
-                                                    <span className="text-xs font-bold uppercase tracking-widest">Growth Factor</span>
-                                                </div>
-                                                <div className="text-xl font-bold text-blue-400">
-                                                    {career.job_outlook}
-                                                </div>
-                                            </div>
+                                            <p className="text-slate-400 text-xs font-medium italic">
+                                                Detailed career analytics and market trends are powered by modern academic insights.
+                                            </p>
                                         </div>
                                     </div>
 

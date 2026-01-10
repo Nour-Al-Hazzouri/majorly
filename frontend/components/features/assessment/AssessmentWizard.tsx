@@ -49,6 +49,7 @@ const AssessmentWizard = ({ majorId, backLink = '/dashboard', backLabel = 'Back 
     } = useAssessmentStore();
 
     const [isLoading, setIsLoading] = useState(true);
+    const [isStarting, setIsStarting] = useState(false);
 
     // Initial check for major context mismatch to prevent "glitch" render
     // If we're on a page for Major A but store has Major B (or no major), we are in a mismatch.
@@ -123,6 +124,12 @@ const AssessmentWizard = ({ majorId, backLink = '/dashboard', backLabel = 'Back 
     }, [setSections, majorId]);
 
     const handleStart = async () => {
+        if (isStarting) {
+            toast.error('Assessment is already preparing. Please wait...');
+            return;
+        }
+
+        setIsStarting(true);
         try {
             if (!assessmentId) {
                 const payload = majorId
@@ -134,6 +141,7 @@ const AssessmentWizard = ({ majorId, backLink = '/dashboard', backLabel = 'Back 
             nextStep();
         } catch (error) {
             toast.error('Failed to start assessment');
+            setIsStarting(false);
         }
     };
 
@@ -283,7 +291,13 @@ const AssessmentWizard = ({ majorId, backLink = '/dashboard', backLabel = 'Back 
                             exit={{ opacity: 0, y: -20 }}
                             transition={{ duration: 0.4, ease: "easeOut" }}
                         >
-                            {currentStep === 0 && <WelcomeStep onStart={handleStart} isDeepDive={!!majorId} />}
+                            {currentStep === 0 && (
+                                <WelcomeStep
+                                    onStart={handleStart}
+                                    isDeepDive={!!majorId}
+                                    isLoading={isStarting}
+                                />
+                            )}
 
                             {currentStep > 0 && currentStep <= sections.length && (
                                 <div className="space-y-6">

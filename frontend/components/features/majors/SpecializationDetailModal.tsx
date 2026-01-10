@@ -10,7 +10,6 @@ import {
     ArrowRight,
     CheckCircle2,
     Layers,
-    TrendingUp,
     Heart
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -188,8 +187,7 @@ export const SpecializationDetailModal: React.FC<SpecializationDetailModalProps>
                                                     className="group p-6 rounded-2xl bg-slate-50 border border-slate-100 hover:border-blue-200 hover:bg-white hover:shadow-md transition-all cursor-pointer flex flex-col justify-between"
                                                 >
                                                     <div>
-                                                        <h4 className="font-bold text-slate-900 mb-2 group-hover:text-blue-600 transition-colors">{occ.name}</h4>
-                                                        <p className="text-sm text-slate-500 line-clamp-2 mb-4">{occ.description}</p>
+                                                        <p className="text-sm text-slate-500 line-clamp-2">{occ.description}</p>
                                                     </div>
                                                     <div className="flex items-center justify-end mt-2 pt-2 border-t border-slate-100">
                                                         <ArrowRight className="w-4 h-4 text-blue-500 transition-transform group-hover:translate-x-1" />
@@ -229,15 +227,9 @@ export const SpecializationDetailModal: React.FC<SpecializationDetailModalProps>
                                         <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 bg-white/5 rounded-full blur-2xl" />
 
                                         <div className="space-y-6 relative z-10">
-                                            <div className="pb-6">
-                                                <div className="flex items-center gap-2 text-indigo-300 mb-2">
-                                                    <TrendingUp className="w-4 h-4" />
-                                                    <span className="text-xs font-bold uppercase tracking-widest text-indigo-300">Demand Level</span>
-                                                </div>
-                                                <div className="text-xl font-bold text-blue-400">
-                                                    High Demand
-                                                </div>
-                                            </div>
+                                            <p className="text-slate-400 text-xs font-medium italic">
+                                                Exploring market potential and academic relevance.
+                                            </p>
                                         </div>
                                     </div>
 

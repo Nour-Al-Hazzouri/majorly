@@ -11,7 +11,6 @@ import {
     ChevronDown,
     ChevronUp,
     Briefcase,
-    TrendingUp,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SpecializationResult } from '@/types';
@@ -156,11 +155,8 @@ function SpecializationCard({ result, index }: { result: SpecializationResult; i
                                     {/* Additional Occupation Info */}
                                     {isOccupation && (result.occupation) && (
                                         <div className="grid grid-cols-2 gap-4">
-                                            <div className="bg-white/60 p-4 rounded-xl">
-                                                <div className="text-xs text-[#64748b] font-bold uppercase mb-1">Job Outlook</div>
-                                                <div className="text-lg font-bold text-emerald-600">
-                                                    {result.occupation.job_outlook || 'Growth Stable'}
-                                                </div>
+                                            <div className="text-lg font-bold text-indigo-600">
+                                                Verified Specialization
                                             </div>
                                         </div>
                                     )}
@@ -177,10 +173,6 @@ function SpecializationCard({ result, index }: { result: SpecializationResult; i
                                                     <div key={occ.id} className="bg-white/80 p-4 rounded-xl border border-white shadow-sm hover:shadow-md transition-all">
                                                         <h4 className="font-bold text-[#1e293b] text-sm mb-2">{occ.name}</h4>
                                                         <div className="flex flex-wrap gap-3 text-xs text-[#64748b]">
-                                                            <div className="flex items-center gap-1">
-                                                                <TrendingUp className="w-3 h-3 text-green-500" />
-                                                                {occ.job_outlook || 'Growing'}
-                                                            </div>
                                                         </div>
                                                     </div>
                                                 ))}

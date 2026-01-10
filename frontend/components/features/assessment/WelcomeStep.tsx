@@ -9,9 +9,10 @@ import { motion } from 'framer-motion';
 interface WelcomeStepProps {
     onStart: () => void;
     isDeepDive?: boolean;
+    isLoading?: boolean;
 }
 
-const WelcomeStep = ({ onStart, isDeepDive }: WelcomeStepProps) => {
+const WelcomeStep = ({ onStart, isDeepDive, isLoading }: WelcomeStepProps) => {
     return (
         <Card className="border-white bg-white/70 backdrop-blur-xl shadow-2xl rounded-[2rem] overflow-hidden">
             <CardHeader className="text-center pt-12 pb-6 px-8">
@@ -64,9 +65,19 @@ const WelcomeStep = ({ onStart, isDeepDive }: WelcomeStepProps) => {
                     size="lg"
                     className="w-full sm:w-80 h-16 text-lg font-bold rounded-full bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:opacity-90 transition-all shadow-xl shadow-[#4F46E5]/25 text-white"
                     onClick={onStart}
+                    disabled={isLoading}
                 >
-                    {isDeepDive ? 'Start Deep Dive' : 'Start Free Assessment'}
-                    <ArrowRight className="ml-2 w-5 h-5 text-white" />
+                    {isLoading ? (
+                        <>
+                            <div className="mr-2 h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                            Starting...
+                        </>
+                    ) : (
+                        <>
+                            {isDeepDive ? 'Start Deep Dive' : 'Start Free Assessment'}
+                            <ArrowRight className="ml-2 w-5 h-5 text-white" />
+                        </>
+                    )}
                 </Button>
                 <p className="text-sm text-[#94a3b8] mt-6 font-medium">
                     Instant results

@@ -10,9 +10,9 @@ export default function proxy(request: NextRequest) {
     const isAuthenticated = cookies.get('is_authenticated')?.value === 'true';
     const path = nextUrl.pathname;
 
-    // 1. Authorized Users: Redirect from public/auth routes to dashboard
+    // 1. Authorized Users: Prevent access to Auth routes (Home remains restricted to move them to Dashboard)
     if (isAuthenticated) {
-        if (publicMarketingRoutes.includes(path) || authRoutes.includes(path)) {
+        if (path === '/' || authRoutes.includes(path)) {
             return NextResponse.redirect(new URL('/dashboard', request.url));
         }
     }

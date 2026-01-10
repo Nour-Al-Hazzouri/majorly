@@ -13,22 +13,6 @@ class QuestionService
     {
         return [
             [
-                'id' => 'skills_current',
-                'title' => 'Current Skills',
-                'description' => 'What skills do you currently possess? Select at least 3.',
-                'type' => 'skills_search',
-                'required' => true,
-                'min_selections' => 3,
-            ],
-            [
-                'id' => 'skills_aspiration',
-                'title' => 'Skills to Learn',
-                'description' => 'Which skills are you interested in learning or developing?',
-                'type' => 'skills_search',
-                'required' => true,
-                'min_selections' => 1,
-            ],
-            [
                 'id' => 'strengths_weaknesses',
                 'title' => 'Strengths & Weaknesses',
                 'description' => 'Rate yourself on the following attributes (1 = Weak, 5 = Strong).',

@@ -88,13 +88,6 @@ export const CareerPaths: React.FC<CareerPathsProps> = ({ occupations }) => {
                         </CardHeader>
                         <CardContent className="mt-auto">
                             <div className="pt-4 border-t border-slate-100 flex flex-col gap-3">
-                                <div className="flex items-center justify-between text-sm">
-                                    <span className="text-slate-400 font-medium flex items-center gap-1.5">
-                                        <DollarSign className="w-4 h-4 text-emerald-500" />
-                                        Median Salary
-                                    </span>
-                                    <span className="font-bold text-slate-900">{formatSalary(occupation.median_salary)}</span>
-                                </div>
                                 {occupation.job_outlook && (
                                     <div className="flex items-center justify-between text-sm">
                                         <span className="text-slate-400 font-medium flex items-center gap-1.5">

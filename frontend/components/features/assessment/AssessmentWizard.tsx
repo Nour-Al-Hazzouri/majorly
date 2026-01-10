@@ -12,7 +12,6 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Sparkles, CheckCircle, ArrowRight, AlertTriangle, ExternalLink } from 'lucide-react';
 import { useAuth } from '@/components/providers/AuthProvider';
 import WelcomeStep from '@/components/features/assessment/WelcomeStep';
-import SkillsStep from '@/components/features/assessment/SkillsStep';
 import { cn } from '@/lib/utils';
 import RatingStep from '@/components/features/assessment/RatingStep';
 import ResultsStep from '@/components/features/assessment/ResultsStep';
@@ -288,21 +287,13 @@ const AssessmentWizard = ({ majorId, backLink = '/dashboard', backLabel = 'Back 
 
                             {currentStep > 0 && currentStep <= sections.length && (
                                 <div className="space-y-6">
-                                    {sections[currentStep - 1].type === 'skills_search' ? (
-                                        <SkillsStep
-                                            section={sections[currentStep - 1]}
-                                            onNext={handleSaveProgress}
-                                            onBack={prevStep}
-                                        />
-                                    ) : (
-                                        <RatingStep
-                                            section={sections[currentStep - 1]}
-                                            onNext={currentStep === sections.length ? handleSubmit : handleSaveProgress}
-                                            onBack={prevStep}
-                                            isLastStep={currentStep === sections.length}
-                                            isSubmitting={isSubmitting}
-                                        />
-                                    )}
+                                    <RatingStep
+                                        section={sections[currentStep - 1]}
+                                        onNext={currentStep === sections.length ? handleSubmit : handleSaveProgress}
+                                        onBack={prevStep}
+                                        isLastStep={currentStep === sections.length}
+                                        isSubmitting={isSubmitting}
+                                    />
                                 </div>
                             )}
                         </motion.div>

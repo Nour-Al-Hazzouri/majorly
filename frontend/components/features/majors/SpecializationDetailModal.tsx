@@ -10,7 +10,6 @@ import {
     ArrowRight,
     CheckCircle2,
     Layers,
-    DollarSign,
     TrendingUp,
     Heart
 } from 'lucide-react';
@@ -93,17 +92,6 @@ export const SpecializationDetailModal: React.FC<SpecializationDetailModalProps>
 
     if (!specialization) return null;
 
-    const avgSalary = specialization.occupations.length > 0
-        ? specialization.occupations.reduce((acc, occ) => acc + occ.median_salary, 0) / specialization.occupations.length
-        : 0;
-
-    const formatSalary = (salary: number) => {
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD',
-            maximumFractionDigits: 0,
-        }).format(salary);
-    };
 
     const handleCareerClick = (occupation: Occupation) => {
         setSelectedCareer(occupation);
@@ -203,8 +191,7 @@ export const SpecializationDetailModal: React.FC<SpecializationDetailModalProps>
                                                         <h4 className="font-bold text-slate-900 mb-2 group-hover:text-blue-600 transition-colors">{occ.name}</h4>
                                                         <p className="text-sm text-slate-500 line-clamp-2 mb-4">{occ.description}</p>
                                                     </div>
-                                                    <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-100">
-                                                        <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">{formatSalary(occ.median_salary)}/yr</span>
+                                                    <div className="flex items-center justify-end mt-2 pt-2 border-t border-slate-100">
                                                         <ArrowRight className="w-4 h-4 text-blue-500 transition-transform group-hover:translate-x-1" />
                                                     </div>
                                                 </div>
@@ -242,18 +229,7 @@ export const SpecializationDetailModal: React.FC<SpecializationDetailModalProps>
                                         <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 bg-white/5 rounded-full blur-2xl" />
 
                                         <div className="space-y-6 relative z-10">
-                                            <div>
-                                                <div className="flex items-center gap-2 text-indigo-300 mb-2">
-                                                    <DollarSign className="w-4 h-4" />
-                                                    <span className="text-xs font-bold uppercase tracking-widest text-indigo-300">Avg. Field Salary</span>
-                                                </div>
-                                                <div className="text-4xl font-black tracking-tight">
-                                                    {formatSalary(avgSalary)}
-                                                    <span className="text-lg font-normal text-indigo-400 ml-1">/yr</span>
-                                                </div>
-                                            </div>
-
-                                            <div className="pt-6 border-t border-white/10">
+                                            <div className="pb-6">
                                                 <div className="flex items-center gap-2 text-indigo-300 mb-2">
                                                     <TrendingUp className="w-4 h-4" />
                                                     <span className="text-xs font-bold uppercase tracking-widest text-indigo-300">Demand Level</span>

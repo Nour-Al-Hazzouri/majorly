@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     X,
-    DollarSign,
     TrendingUp,
     Briefcase,
     Target,
@@ -107,13 +106,6 @@ export const CareerDetailModal: React.FC<CareerDetailModalProps> = ({ isOpen, on
             ? career.tasks
             : [];
 
-    const formatSalary = (salary: number) => {
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD',
-            maximumFractionDigits: 0,
-        }).format(salary);
-    };
 
     // Group knowledge by type and sort by importance with a stable tie-break
     const sortedKnowledge = (career.onet_knowledge || [])
@@ -298,17 +290,6 @@ export const CareerDetailModal: React.FC<CareerDetailModalProps> = ({ isOpen, on
 
                                         <div className="space-y-6 relative z-10">
                                             <div>
-                                                <div className="flex items-center gap-2 text-slate-400 mb-2">
-                                                    <DollarSign className="w-4 h-4" />
-                                                    <span className="text-xs font-bold uppercase tracking-widest">Median Salary</span>
-                                                </div>
-                                                <div className="text-4xl font-black tracking-tight">
-                                                    {formatSalary(career.median_salary)}
-                                                    <span className="text-lg font-normal text-slate-400 ml-1">/yr</span>
-                                                </div>
-                                            </div>
-
-                                            <div className="pt-6 border-t border-white/10">
                                                 <div className="flex items-center gap-2 text-slate-400 mb-2">
                                                     <TrendingUp className="w-4 h-4" />
                                                     <span className="text-xs font-bold uppercase tracking-widest">Growth Factor</span>

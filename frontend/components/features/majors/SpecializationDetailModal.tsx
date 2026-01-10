@@ -38,6 +38,7 @@ interface Occupation {
     tasks: string[] | string | null;
     tech_skills?: any[];
     onet_knowledge?: any[];
+    skills?: Skill[];
 }
 
 interface Specialization {

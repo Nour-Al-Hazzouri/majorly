@@ -15,12 +15,12 @@ class ImportEscoSkills extends Command
 
     public function handle()
     {
-        $basePath = $this->option('path') ?: storage_path('app/opendata/esco');
+        $basePath = $this->option('path') ?: storage_path('app/opendata/ESCO dataset - v1.2.1 - classification - en - csv');
         
         $files = [
             'skills' => $basePath . '/skills_en.csv',
             'occupations' => $basePath . '/occupations_en.csv',
-            'relations' => $basePath . '/occupationSkillRelations.csv'
+            'relations' => $basePath . '/occupationSkillRelations_en.csv'
         ];
 
         // 1. Validation
@@ -40,33 +40,87 @@ class ImportEscoSkills extends Command
         try {
             // 2. Load ESCO Occupations (URI -> Name)
             $this->info("Parsing ESCO Occupations...");
-            $escoOccMap = []; // URI -> Name
+            $escoOccMap = []; // URI -> [names]
+            $escoIscoMap = []; // URI -> ISCO
             if (($handle = fopen($files['occupations'], "r")) !== FALSE) {
                 $header = fgetcsv($handle);
-                $uriIdx = array_search('conceptUri', $header) ?: 0;
-                $nameIdx = array_search('preferredLabel', $header) ?: array_search('term', $header); // Headers vary by version
+                $uriIdx = array_search('conceptUri', $header);
+                $nameIdx = array_search('preferredLabel', $header);
+                $altIdx = array_search('altLabels', $header);
+                $iscoIdx = array_search('iscoGroup', $header);
                 
+                if ($uriIdx === false) $uriIdx = 1; 
+                if ($nameIdx === false) $nameIdx = 3;
+
                 while (($data = fgetcsv($handle)) !== FALSE) {
-                    if (isset($data[$uriIdx]) && isset($data[$nameIdx])) {
-                        $escoOccMap[$data[$uriIdx]] = Str::lower($data[$nameIdx]);
+                    if (isset($data[$uriIdx])) {
+                        $uri = $data[$uriIdx];
+                        $names = [];
+                        if (isset($data[$nameIdx])) {
+                            $names[] = Str::lower(Str::singular($data[$nameIdx]));
+                        }
+                        if ($altIdx !== false && isset($data[$altIdx])) {
+                            $alts = explode("\n", $data[$altIdx]);
+                            foreach ($alts as $alt) {
+                                $names[] = Str::lower(Str::singular(trim($alt)));
+                            }
+                        }
+                        $escoOccMap[$uri] = array_unique(array_filter($names));
+                        
+                        // ISCO
+                        if ($iscoIdx !== false && isset($data[$iscoIdx])) {
+                            $escoIscoMap[$uri] = $data[$iscoIdx];
+                        }
                     }
                 }
                 fclose($handle);
             }
 
             // 3. Load O*NET Occupations (Name -> ID)
-            $onetOccMap = Occupation::pluck('id', 'name')->map(fn($id, $name) => [Str::lower($name) => $id])->collapse()->toArray();
+            $this->info("Loading O*NET Occupations from DB...");
+            $onetOccMap = [];
+            foreach (Occupation::all() as $occ) {
+                $normName = Str::lower(Str::singular($occ->name));
+                $onetOccMap[$normName] = $occ->id;
+            }
 
-            // 4. Map ESCO URI -> O*NET ID (via Name Match)
+            // 4. Map ESCO URI -> O*NET ID
+            $this->info("Mapping ESCO URIs to O*NET IDs...");
             $uriToOnetId = [];
-            $matches = 0;
-            foreach ($escoOccMap as $uri => $name) {
-                if (isset($onetOccMap[$name])) {
-                    $uriToOnetId[$uri] = $onetOccMap[$name];
-                    $matches++;
+            $matchesByName = 0;
+            $matchesByIsco = 0;
+            
+            // First 4 digits of SOC often align with ISCO (simplified crosswalk)
+            $onetIscoMap = [];
+            foreach (Occupation::all() as $occ) {
+                $soc4 = str_replace('-', '', substr($occ->soc_code, 0, 5)); // e.g. 11-10 -> 1110
+                $onetIscoMap[$soc4][] = $occ->id;
+            }
+
+            foreach ($escoOccMap as $uri => $names) {
+                $matched = false;
+                // Try Name Match First (Higher Accuracy)
+                foreach ($names as $name) {
+                    if (isset($onetOccMap[$name])) {
+                        $uriToOnetId[$uri] = $onetOccMap[$name];
+                        $matchesByName++;
+                        $matched = true;
+                        break;
+                    }
+                }
+
+                // Fallback to ISCO Code Prefix (if ESCO has ISCO group)
+                if (!$matched && isset($escoIscoMap[$uri])) {
+                    $isco = $escoIscoMap[$uri];
+                    if (isset($onetIscoMap[$isco])) {
+                        // If there are multiple O*NET matches for one ISCO, we pick the first or link ALL?
+                        // For skills, linking to the first representative is safer to avoid pollution.
+                        $uriToOnetId[$uri] = $onetIscoMap[$isco][0];
+                        $matchesByIsco++;
+                    }
                 }
             }
-            $this->info("Matched $matches Occupations by name.");
+            $this->info("Matched $matchesByName by name and $matchesByIsco by ISCO prefix.");
 
             // 5. Load Skills (URI -> Details)
             $this->info("Parsing ESCO Skills...");
@@ -95,31 +149,26 @@ class ImportEscoSkills extends Command
             if (($handle = fopen($files['relations'], "r")) !== FALSE) {
                 fgetcsv($handle); // Skip header
                 while (($data = fgetcsv($handle)) !== FALSE) {
-                    // data[0] = occupationUri, data[1] = skillUri, data[2] = relationType, data[3] = skillType
-                    $occUri = $data[0];
-                    $skillUri = $data[1];
+                    // Correct Indexes for v1.2.1:
+                    // 0: occupationUri, 1: occupationLabel, 2: relationType, 3: skillType, 4: skillUri, 5: skillLabel
+                    $occUri = $data[0] ?? null;
+                    $skillUri = $data[4] ?? null;
                     $relation = $data[2] ?? '';
 
-                    // Only link 'essential' skills (optional: include 'optional'?)
                     if ($relation !== 'essential') continue;
 
-                    // If this occupation matches one of ours
                     if (isset($uriToOnetId[$occUri]) && isset($skillsMap[$skillUri])) {
-                        $onetId = $uriToOnetId[$occUri];
                         $skill = $skillsMap[$skillUri];
                         
-                        // Queue Skill for Upsert
                         if (!isset($seenSkills[$skill['name']])) {
                             $skillUpsertChunk[$skill['name']] = [
                                 'name' => $skill['name'],
                                 'category' => $skill['category'] ?? 'Professional',
-                                'lightcast_id' => 'ESCO_' . substr(md5($skill['name']), 0, 10), // Deterministic ID
+                                'lightcast_id' => 'ESCO_' . substr(md5($skill['name']), 0, 10),
                                 'created_at' => now(), 'updated_at' => now()
                             ];
                             $seenSkills[$skill['name']] = true;
                         }
-
-                        // We delay linking until we have Skill IDs
                     }
                 }
                 fclose($handle);
@@ -128,19 +177,18 @@ class ImportEscoSkills extends Command
             // 7. Upsert Skills
             $this->info("Upserting " . count($skillUpsertChunk) . " ESCO Skills...");
             foreach (array_chunk($skillUpsertChunk, 1000) as $chunk) {
-                Skill::upsert($chunk, ['name'], ['category', 'lightcast_id']);
+                Skill::upsert(array_values($chunk), ['name'], ['category', 'lightcast_id']);
             }
             
-            // 8. Create Links (Now that we have IDs)
+            // 8. Create Links
             $dbSkills = Skill::pluck('id', 'name')->toArray();
             $pivots = [];
             
-            // Re-read relations to link (memory efficient)
             if (($handle = fopen($files['relations'], "r")) !== FALSE) {
                 fgetcsv($handle);
                 while (($data = fgetcsv($handle)) !== FALSE) {
-                    $occUri = $data[0];
-                    $skillUri = $data[1];
+                    $occUri = $data[0] ?? null;
+                    $skillUri = $data[4] ?? null;
                     $relation = $data[2] ?? '';
                     
                     if ($relation !== 'essential') continue;

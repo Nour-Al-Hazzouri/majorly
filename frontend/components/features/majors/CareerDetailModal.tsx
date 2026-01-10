@@ -40,6 +40,12 @@ interface OnetTechSkill {
     hot_tech: boolean;
 }
 
+interface Skill {
+    id: number;
+    name: string;
+    category: string;
+}
+
 interface Occupation {
     id: number;
     name: string;
@@ -50,6 +56,7 @@ interface Occupation {
     tasks: string[] | string | null;
     tech_skills?: OnetTechSkill[];
     onet_knowledge?: OnetKnowledge[];
+    skills?: Skill[];
 }
 
 interface CareerDetailModalProps {
@@ -331,6 +338,24 @@ export const CareerDetailModal: React.FC<CareerDetailModalProps> = ({ isOpen, on
                                                     >
                                                         {ts.skill_name}
                                                         {ts.hot_tech && <Zap className="w-3 h-3 ml-1 fill-white" />}
+                                                    </Badge>
+                                                ))}
+                                            </div>
+                                        </section>
+                                    )}
+
+                                    {/* ESCO Professional Skills */}
+                                    {career.skills && career.skills.length > 0 && (
+                                        <section className="bg-white border border-slate-100 rounded-3xl p-8 shadow-sm">
+                                            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest mb-6">Professional Skills</h3>
+                                            <div className="flex flex-wrap gap-2">
+                                                {career.skills.map((skill) => (
+                                                    <Badge
+                                                        key={skill.id}
+                                                        variant="outline"
+                                                        className="px-3 py-1.5 text-xs font-bold rounded-lg bg-emerald-50/50 text-emerald-700 border-emerald-100"
+                                                    >
+                                                        {skill.name}
                                                     </Badge>
                                                 ))}
                                             </div>

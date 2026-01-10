@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import api, { getCsrfCookie } from '@/lib/api';
+import api, { setAuthToken, getAuthToken } from '@/lib/api';
 import { LoginInput, RegisterInput } from '@/lib/validations/auth';
 import { useRouter } from 'next/navigation';
 import { useAssessmentStore } from '@/store/slices/assessmentStore';
@@ -29,13 +29,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const router = useRouter();
 
     const checkAuthStatus = async () => {
+        const token = getAuthToken();
+        if (!token) {
+            setUser(null);
+            setIsLoading(false);
+            return;
+        }
+
         try {
             const response = await api.get('/api/user');
             setUser(response.data);
         } catch (error) {
+            // Token is invalid or expired
+            setAuthToken(null);
             setUser(null);
-            // Clear marker cookie if unauthorized
-            document.cookie = 'majorly_logged_in=; Max-Age=0; path=/;';
         } finally {
             setIsLoading(false);
         }
@@ -46,20 +53,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, []);
 
     const login = async (data: LoginInput) => {
-        await getCsrfCookie();
-        await api.post('/api/login', data);
-        const response = await api.get('/api/user');
-        setUser(response.data);
-        useAssessmentStore.getState().setUserId(response.data.id);
+        const response = await api.post('/api/login', data);
+        const { token, user: userData } = response.data;
+        setAuthToken(token);
+        setUser(userData);
+        useAssessmentStore.getState().setUserId(userData.id);
         router.push('/dashboard');
     };
 
     const register = async (data: RegisterInput) => {
-        await getCsrfCookie();
-        await api.post('/api/register', data);
-        const response = await api.get('/api/user');
-        setUser(response.data);
-        useAssessmentStore.getState().setUserId(response.data.id);
+        const response = await api.post('/api/register', data);
+        const { token, user: userData } = response.data;
+        setAuthToken(token);
+        setUser(userData);
+        useAssessmentStore.getState().setUserId(userData.id);
         router.push('/dashboard');
     };
 
@@ -69,8 +76,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } catch (error) {
             console.error('Logout error:', error);
         } finally {
-            // Always clear local state and marker cookie
-            document.cookie = 'majorly_logged_in=; Max-Age=0; path=/;';
+            setAuthToken(null);
             setUser(null);
             useAssessmentStore.getState().reset();
             router.push('/login');
@@ -91,3 +97,4 @@ export const useAuth = () => {
     }
     return context;
 };
+

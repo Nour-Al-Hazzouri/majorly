@@ -17,15 +17,23 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::factory()->create([
-            'name' => 'Test User',
+        // Create Test User
+        User::firstOrCreate([
             'email' => 'test@example.com',
+        ], [
+            'name' => 'Test User',
+            'password' => bcrypt('password'),
         ]);
 
-        $this->call([
-            OccupationSeeder::class,
-            MajorSeeder::class,
-            SpecializationSeeder::class,
-        ]);
+        // NOTE: The heavy O*NET data import is too large for Render's boot process.
+        // run these commands MANUALLY in the Render Shell after deployment:
+        // php artisan majorly:download-open-data 
+        // php artisan majorly:import-open-data
+        
+        // $this->command->info('Downloading Open Data...');
+        // \Illuminate\Support\Facades\Artisan::call('majorly:download-open-data', [], $this->command->getOutput());
+        
+        // $this->command->info('Importing Open Data (this may take a while)...');
+        // \Illuminate\Support\Facades\Artisan::call('majorly:import-open-data', [], $this->command->getOutput());
     }
 }

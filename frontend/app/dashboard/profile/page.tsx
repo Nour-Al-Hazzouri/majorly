@@ -12,7 +12,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { User, History, Heart, Settings, LayoutDashboard, BookOpen, Layers, Briefcase } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
 
-export default function ProfilePage() {
+import { Suspense } from 'react';
+
+function ProfileContent() {
     const { user } = useAuth();
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -163,5 +165,23 @@ export default function ProfilePage() {
                 </div>
             </main>
         </div>
+    );
+}
+
+export default function ProfilePage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-[#F8FAFC]">
+                <Sidebar />
+                <main className="md:ml-64 p-8">
+                    <div className="max-w-4xl mx-auto space-y-8">
+                        <Skeleton className="h-12 w-48" />
+                        <Skeleton className="h-[400px] w-full rounded-2xl" />
+                    </div>
+                </main>
+            </div>
+        }>
+            <ProfileContent />
+        </Suspense>
     );
 }

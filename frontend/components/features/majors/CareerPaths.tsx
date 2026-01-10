@@ -88,24 +88,10 @@ export const CareerPaths: React.FC<CareerPathsProps> = ({ occupations }) => {
                         </CardHeader>
                         <CardContent className="mt-auto">
                             <div className="pt-4 border-t border-slate-100 flex flex-col gap-3">
-                                <div className="flex items-center justify-between text-sm">
-                                    <span className="text-slate-400 font-medium flex items-center gap-1.5">
-                                        <DollarSign className="w-4 h-4 text-emerald-500" />
-                                        Median Salary
-                                    </span>
-                                    <span className="font-bold text-slate-900">{formatSalary(occupation.median_salary)}</span>
+                                <div className="text-[11px] font-bold text-blue-600/60 uppercase tracking-widest flex items-center justify-between">
+                                    Full Analysis Available
+                                    <ArrowUpRight className="w-3 h-3" />
                                 </div>
-                                {occupation.job_outlook && (
-                                    <div className="flex items-center justify-between text-sm">
-                                        <span className="text-slate-400 font-medium flex items-center gap-1.5">
-                                            <TrendingUp className="w-4 h-4 text-blue-500" />
-                                            Outlook
-                                        </span>
-                                        <span className="font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md text-[10px] uppercase tracking-wider">
-                                            {occupation.job_outlook}
-                                        </span>
-                                    </div>
-                                )}
                             </div>
                         </CardContent>
                     </Card>

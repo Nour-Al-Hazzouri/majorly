@@ -7,6 +7,7 @@ import { BookOpen, Sparkles, Calendar, ArrowRight, Target } from "lucide-react";
 import { motion } from "motion/react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { getDashboardData } from "@/lib/api";
 
 export default function DashboardPage() {
@@ -33,7 +34,15 @@ export default function DashboardPage() {
         fetchDashboard();
     }, []);
 
-    if (loading) {
+    const router = useRouter(); // You'll need to import this
+
+    useEffect(() => {
+        if (!loading && !user) {
+            router.push('/login');
+        }
+    }, [user, loading, router]);
+
+    if (loading || !user) {
         return (
             <div className="min-h-screen bg-[#F8FAFC]">
                 <Sidebar />

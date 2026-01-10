@@ -1,34 +1,29 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-// Routes that require authentication
-const protectedRoutes = ['/dashboard', '/assessment', '/profile', '/settings'];
-
-// Routes that should be inaccessible to logged-in users
 const authRoutes = ['/login', '/register', '/forgot-password', '/reset-password'];
+const publicMarketingRoutes = ['/', '/about'];
 
-export default function (request: NextRequest) {
-    const { pathname } = request.nextUrl;
+// Next.js 16 Proxy: Traffic routing and optimistic navigation guards
+export default function proxy(request: NextRequest) {
+    const { nextUrl, cookies } = request;
+    const isAuthenticated = cookies.get('is_authenticated')?.value === 'true';
+    const path = nextUrl.pathname;
 
-    // Check for our custom authenticated cookie (reliable)
-    const isAuthenticated = request.cookies.has('majorly_logged_in');
-
-    // Debugging (Remove in production)
-    if (pathname.startsWith('/dashboard') || pathname.startsWith('/login')) {
-        console.log(`[Proxy] Path: ${pathname} | Authed: ${isAuthenticated}`);
+    // 1. Authorized Users: Prevent access to Auth routes (Home remains restricted to move them to Dashboard)
+    if (isAuthenticated) {
+        if (path === '/' || authRoutes.includes(path)) {
+            return NextResponse.redirect(new URL('/dashboard', request.url));
+        }
     }
 
-    // 1. Redirect unauthenticated users from protected routes to login
-    if (!isAuthenticated && protectedRoutes.some(route => pathname.startsWith(route))) {
-        const url = new URL('/login', request.url);
-        // Optional: Add a redirect parameter to return here after login
-        // url.searchParams.set('redirect', pathname);
-        return NextResponse.redirect(url);
-    }
+    // 2. Unauthorized Users: Redirect from protected routes to landing page
+    if (!isAuthenticated) {
+        const isAllowedPath = publicMarketingRoutes.includes(path) || authRoutes.includes(path);
 
-    // 2. Redirect authenticated users away from auth pages to dashboard
-    if (isAuthenticated && authRoutes.some(route => pathname.startsWith(route))) {
-        return NextResponse.redirect(new URL('/dashboard', request.url));
+        if (!isAllowedPath) {
+            return NextResponse.redirect(new URL('/', request.url));
+        }
     }
 
     return NextResponse.next();

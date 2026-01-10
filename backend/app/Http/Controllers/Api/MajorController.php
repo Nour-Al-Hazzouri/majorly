@@ -57,6 +57,9 @@ class MajorController extends Controller
                 'occupations' => function($q) {
                     $q->select('occupations.id', 'occupations.name', 'occupations.code', 'occupations.soc_code', 'occupations.description', 'occupations.median_salary', 'occupations.job_outlook', 'occupations.tasks');
                 },
+                'occupations.skills' => function($q) {
+                    $q->select('skills.id', 'skills.name', 'skills.category');
+                },
                 'occupations.techSkills' => function($q) {
                     $q->select('id', 'soc_code', 'skill_name', 'hot_tech')->limit(15);
                 },
@@ -68,6 +71,9 @@ class MajorController extends Controller
                 'specializations.skills',
                 'specializations.occupations' => function($q) {
                     $q->select('occupations.id', 'occupations.name', 'occupations.code', 'occupations.soc_code', 'occupations.description', 'occupations.median_salary', 'occupations.job_outlook', 'occupations.tasks');
+                },
+                'specializations.occupations.skills' => function($q) {
+                    $q->select('skills.id', 'skills.name', 'skills.category');
                 },
                 'specializations.occupations.techSkills' => function($q) {
                     $q->select('id', 'soc_code', 'skill_name', 'hot_tech')->limit(15);

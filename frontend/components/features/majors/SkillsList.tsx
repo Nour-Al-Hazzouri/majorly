@@ -39,9 +39,6 @@ export const SkillsList: React.FC<SkillsListProps> = ({ initialSkills, majorId }
         fetchAllSkills();
     }, [majorId]);
 
-    const technicalSkills = allSkills.filter(s => s.category !== 'Soft Skill');
-    const softSkills = allSkills.filter(s => s.category === 'Soft Skill');
-
     return (
         <div id="skills-section" className="space-y-10 animate-in fade-in duration-700">
             {/* Header */}
@@ -51,8 +48,8 @@ export const SkillsList: React.FC<SkillsListProps> = ({ initialSkills, majorId }
                         <Brain className="w-5 h-5" />
                     </div>
                     <div>
-                        <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Core Skills & Expertise</h2>
-                        <p className="text-sm text-slate-500 font-medium">Explore the comprehensive skill profile for this major</p>
+                        <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Professional Skills & Expertise</h2>
+                        <p className="text-sm text-slate-500 font-medium">Verified professional competencies and domain knowledge</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -63,80 +60,41 @@ export const SkillsList: React.FC<SkillsListProps> = ({ initialSkills, majorId }
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
-                {/* Technical Skills Column */}
-                <div className="group bg-white rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col overflow-hidden">
-                    <div className="p-6 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <Zap className="w-4 h-4 text-blue-600" />
-                            <h3 className="text-xs font-black uppercase tracking-widest text-slate-600">Technical & Specialised</h3>
-                        </div>
-                        <Badge variant="outline" className="bg-blue-50 text-blue-600 border-blue-100 font-bold px-3">
-                            {technicalSkills.length} Total
-                        </Badge>
+            {/* Unified Skills Grid */}
+            <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col overflow-hidden">
+                <div className="p-6 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <Zap className="w-4 h-4 text-blue-600" />
+                        <h3 className="text-xs font-black uppercase tracking-widest text-slate-600">Core Competencies</h3>
                     </div>
-
-                    <ScrollArea className="h-[450px] w-full" type="always">
-                        <div className="p-8 flex flex-wrap gap-2.5 content-start">
-                            {technicalSkills.length > 0 ? (
-                                technicalSkills.map((skill) => (
-                                    <Badge
-                                        key={`tech-${skill.id}-${skill.name}`}
-                                        variant="secondary"
-                                        className="px-4 py-2 text-[13px] font-bold bg-white text-blue-700 hover:bg-blue-50 border border-blue-100/50 shadow-sm transition-all duration-200 rounded-xl"
-                                    >
-                                        {skill.name}
-                                    </Badge>
-                                ))
-                            ) : !loadingAll && (
-                                <div className="w-full flex flex-col items-center justify-center py-20 text-slate-400 gap-3">
-                                    <Zap className="w-8 h-8 opacity-20" />
-                                    <p className="text-sm italic font-medium">No specialized skills found.</p>
-                                </div>
-                            )}
-                        </div>
-                    </ScrollArea>
                 </div>
 
-                {/* Soft Skills Column */}
-                <div className="group bg-white rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col overflow-hidden">
-                    <div className="p-6 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <Brain className="w-4 h-4 text-emerald-600" />
-                            <h3 className="text-xs font-black uppercase tracking-widest text-slate-600">Soft Skills & Human-Centric</h3>
-                        </div>
-                        <Badge variant="outline" className="bg-emerald-50 text-emerald-600 border-emerald-100 font-bold px-3">
-                            {softSkills.length} Total
-                        </Badge>
+                <ScrollArea className="h-[500px] w-full" type="always">
+                    <div className="p-8 flex flex-wrap gap-2.5 content-start">
+                        {allSkills.length > 0 ? (
+                            allSkills.map((skill) => (
+                                <Badge
+                                    key={`${skill.id}-${skill.name}`}
+                                    variant="secondary"
+                                    className="px-4 py-2 text-[13px] font-bold bg-white text-blue-700 hover:bg-blue-50 border border-blue-100/50 shadow-sm transition-all duration-200 rounded-xl"
+                                >
+                                    {skill.name}
+                                </Badge>
+                            ))
+                        ) : !loadingAll && (
+                            <div className="w-full flex flex-col items-center justify-center py-20 text-slate-400 gap-3">
+                                <Zap className="w-8 h-8 opacity-20" />
+                                <p className="text-sm italic font-medium">No professional skills found.</p>
+                            </div>
+                        )}
                     </div>
-
-                    <ScrollArea className="h-[450px] w-full" type="always">
-                        <div className="p-8 flex flex-wrap gap-2.5 content-start">
-                            {softSkills.length > 0 ? (
-                                softSkills.map((skill) => (
-                                    <Badge
-                                        key={`soft-${skill.id}-${skill.name}`}
-                                        variant="outline"
-                                        className="px-4 py-2 text-[13px] font-bold bg-white text-emerald-700 hover:bg-emerald-50 border border-emerald-100/50 shadow-sm transition-all duration-200 rounded-xl"
-                                    >
-                                        {skill.name}
-                                    </Badge>
-                                ))
-                            ) : !loadingAll && (
-                                <div className="w-full flex flex-col items-center justify-center py-20 text-slate-400 gap-3">
-                                    <Brain className="w-8 h-8 opacity-20" />
-                                    <p className="text-sm italic font-medium">No human-centric skills listed.</p>
-                                </div>
-                            )}
-                        </div>
-                    </ScrollArea>
-                </div>
+                </ScrollArea>
             </div>
 
-            {/* Legend/Info */}
+            {/* Information */}
             <div className="flex items-center justify-center pt-4">
                 <div className="bg-slate-50 px-6 py-3 rounded-2xl border border-slate-100 text-[11px] font-bold text-slate-400 uppercase tracking-widest shadow-sm">
-                    Scroll the lists above to explore full expertise area
+                    Scroll the list above to explore the full skill set
                 </div>
             </div>
         </div>

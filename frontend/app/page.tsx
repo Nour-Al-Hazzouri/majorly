@@ -34,9 +34,6 @@ export default function Home() {
             </span>
           </Link>
           <div className="flex items-center gap-4">
-            <Button asChild variant="ghost" className="hidden sm:inline-flex text-[#64748b] hover:text-[#4F46E5]">
-              <Link href="/about">About Us</Link>
-            </Button>
             {isAuthenticated ? (
               <div className="flex items-center gap-4">
                 <span className="text-sm font-medium text-[#1e293b] hidden md:inline">Welcome, {user?.name}</span>
@@ -90,14 +87,6 @@ export default function Home() {
                   Start Free Assessment
                   <ArrowRight className="ml-2 w-5 h-5 text-white" />
                 </Link>
-              </Button>
-              <Button
-                asChild
-                size="lg"
-                variant="outline"
-                className="rounded-full text-lg px-8 py-7 border-2 hover:bg-[#F5F3FF]"
-              >
-                <Link href="/about">About Us</Link>
               </Button>
             </div>
           </motion.div>

@@ -4,8 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     X,
-    DollarSign,
-    TrendingUp,
     Briefcase,
     Target,
     Zap,
@@ -40,6 +38,12 @@ interface OnetTechSkill {
     hot_tech: boolean;
 }
 
+interface Skill {
+    id: number;
+    name: string;
+    category: string;
+}
+
 interface Occupation {
     id: number;
     name: string;
@@ -50,6 +54,7 @@ interface Occupation {
     tasks: string[] | string | null;
     tech_skills?: OnetTechSkill[];
     onet_knowledge?: OnetKnowledge[];
+    skills?: Skill[];
 }
 
 interface CareerDetailModalProps {
@@ -100,13 +105,6 @@ export const CareerDetailModal: React.FC<CareerDetailModalProps> = ({ isOpen, on
             ? career.tasks
             : [];
 
-    const formatSalary = (salary: number) => {
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD',
-            maximumFractionDigits: 0,
-        }).format(salary);
-    };
 
     // Group knowledge by type and sort by importance with a stable tie-break
     const sortedKnowledge = (career.onet_knowledge || [])
@@ -195,12 +193,6 @@ export const CareerDetailModal: React.FC<CareerDetailModalProps> = ({ isOpen, on
                                     <Badge variant="secondary" className="bg-blue-600 text-white border-none px-3 py-1 font-bold tracking-wide uppercase text-[10px]">
                                         {career.code}
                                     </Badge>
-                                    {career.job_outlook && (
-                                        <Badge variant="outline" className="bg-white/10 text-blue-200 border-blue-400/30 font-medium">
-                                            <TrendingUp className="w-3.5 h-3.5 mr-1.5" />
-                                            Outlook: {career.job_outlook}
-                                        </Badge>
-                                    )}
                                 </div>
                                 <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight leading-tight max-w-3xl">
                                     {career.name}
@@ -285,30 +277,14 @@ export const CareerDetailModal: React.FC<CareerDetailModalProps> = ({ isOpen, on
 
                                 {/* Right Column: Stats & Meta */}
                                 <div className="space-y-8">
-                                    {/* Quick Stats Card */}
+                                    {/* Sidebar Meta */}
                                     <div className="bg-slate-900 rounded-3xl p-8 text-white relative overflow-hidden">
                                         <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 bg-white/5 rounded-full blur-2xl" />
 
                                         <div className="space-y-6 relative z-10">
-                                            <div>
-                                                <div className="flex items-center gap-2 text-slate-400 mb-2">
-                                                    <DollarSign className="w-4 h-4" />
-                                                    <span className="text-xs font-bold uppercase tracking-widest">Median Salary</span>
-                                                </div>
-                                                <div className="text-4xl font-black tracking-tight">
-                                                    {formatSalary(career.median_salary)}
-                                                    <span className="text-lg font-normal text-slate-400 ml-1">/yr</span>
-                                                </div>
-                                            </div>
-
-                                            <div className="pt-6 border-t border-white/10">
-                                                <div className="flex items-center gap-2 text-slate-400 mb-2">
-                                                    <TrendingUp className="w-4 h-4" />
-                                                    <span className="text-xs font-bold uppercase tracking-widest">Growth Factor</span>
-                                                </div>
-                                                <div className="text-xl font-bold text-blue-400">
-                                                    {career.job_outlook}
-                                                </div>
+                                            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-blue-100 text-[10px] font-bold uppercase tracking-wider w-fit">
+                                                <Globe className="w-3 h-3" />
+                                                Market Insight
                                             </div>
                                         </div>
                                     </div>
@@ -331,6 +307,24 @@ export const CareerDetailModal: React.FC<CareerDetailModalProps> = ({ isOpen, on
                                                     >
                                                         {ts.skill_name}
                                                         {ts.hot_tech && <Zap className="w-3 h-3 ml-1 fill-white" />}
+                                                    </Badge>
+                                                ))}
+                                            </div>
+                                        </section>
+                                    )}
+
+                                    {/* ESCO Professional Skills */}
+                                    {career.skills && career.skills.length > 0 && (
+                                        <section className="bg-white border border-slate-100 rounded-3xl p-8 shadow-sm">
+                                            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest mb-6">Professional Skills</h3>
+                                            <div className="flex flex-wrap gap-2">
+                                                {career.skills.map((skill) => (
+                                                    <Badge
+                                                        key={skill.id}
+                                                        variant="outline"
+                                                        className="px-3 py-1.5 text-xs font-bold rounded-lg bg-emerald-50/50 text-emerald-700 border-emerald-100"
+                                                    >
+                                                        {skill.name}
                                                     </Badge>
                                                 ))}
                                             </div>

@@ -26,14 +26,19 @@ class MatchingService
             $interestScore = $this->calculateRatingScore($major->ideal_interests ?? [], $responses['interests'] ?? []);
             $strengthScore = $this->calculateRatingScore($major->ideal_strengths ?? [], $responses['strengths_weaknesses'] ?? []);
 
-            // Add microscopic entropy for sub-score uniqueness (deterministic based on major ID)
+            // Handle missing skills by re-weighting (Interests 60%, Strengths 40%)
+            if ($skillScore == 0) {
+                $matchPercentage = ($interestScore * 0.6) + ($strengthScore * 0.4);
+            } else {
+                // Original weighting: 60% Skills, 25% Interests, 15% Strengths
+                $matchPercentage = ($skillScore * 0.6) + ($interestScore * 0.25) + ($strengthScore * 0.15);
+            }
+
+            // Add microscopic entropy for sub-score uniqueness
             $subEntropy = ($major->id % 1000) * 0.00001;
             $skillScore = round($skillScore + $subEntropy, 4);
             $interestScore = round($interestScore + $subEntropy, 4);
             $strengthScore = round($strengthScore + $subEntropy, 4);
-
-            // Weighting: 60% Skills (Vector Mapping), 25% Interests, 15% Strengths
-            $matchPercentage = ($skillScore * 0.6) + ($interestScore * 0.25) + ($strengthScore * 0.15);
 
             return [
                 'major_id' => $major->id,
@@ -270,8 +275,14 @@ class MatchingService
             if (isset($responses["occupation_{$occupation->id}"])) {
                 $directRating = $responses["occupation_{$occupation->id}"];
                 $directScore = (($directRating - 1) / 4) * 100;
-                // 60% skill vector match, 40% direct preference
-                $finalMatch = ($skillMatch * 0.6) + ($directScore * 0.4);
+                
+                if ($skillMatch == 0) {
+                    // 100% direct preference if no skills available
+                    $finalMatch = $directScore;
+                } else {
+                    // 60% skill vector match, 40% direct preference
+                    $finalMatch = ($skillMatch * 0.6) + ($directScore * 0.4);
+                }
             }
 
             $results->push([

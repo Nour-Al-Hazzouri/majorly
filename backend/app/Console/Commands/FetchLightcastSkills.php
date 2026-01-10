@@ -30,6 +30,12 @@ class FetchLightcastSkills extends Command
         $this->info('Fetching skills from Lightcast Service...');
 
         $skills = $service->fetchSkills();
+        
+        if (empty($skills)) {
+            $this->warn('No skills fetched. Please ensure Lightcast API credentials (LIGHTCAST_CLIENT_ID, LIGHTCAST_CLIENT_SECRET) are set in your .env file.');
+            return;
+        }
+
         $this->output->progressStart(count($skills));
 
         foreach ($skills as $skillData) {
@@ -44,6 +50,6 @@ class FetchLightcastSkills extends Command
         }
 
         $this->output->progressFinish();
-        $this->info('Skills seeded successfully!');
+        $this->info('Lightcast skills seeded successfully!');
     }
 }

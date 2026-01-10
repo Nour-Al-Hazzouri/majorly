@@ -2,16 +2,38 @@ import axios from 'axios';
 
 const api = axios.create({
     baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
-    withCredentials: true,
-    withXSRFToken: true, // This ensures Axios automatically picks up the XSRF token
     headers: {
         'X-Requested-With': 'XMLHttpRequest',
         'Accept': 'application/json',
+        'Content-Type': 'application/json',
     },
 });
 
-// This is required for Sanctum cookie-based auth
-export const getCsrfCookie = () => api.get('/sanctum/csrf-cookie');
+// Token management for cross-domain auth
+export const setAuthToken = (token: string | null) => {
+    if (token) {
+        localStorage.setItem('auth_token', token);
+        api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    } else {
+        localStorage.removeItem('auth_token');
+        delete api.defaults.headers.common['Authorization'];
+    }
+};
+
+export const getAuthToken = (): string | null => {
+    if (typeof window !== 'undefined') {
+        return localStorage.getItem('auth_token');
+    }
+    return null;
+};
+
+// Initialize token from localStorage on app load
+if (typeof window !== 'undefined') {
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+        api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    }
+}
 
 // Major Detail API
 export const getMajors = (params?: { search?: string, category?: string, page?: number }) =>
@@ -31,3 +53,4 @@ export const toggleFavorite = (type: 'major' | 'specialization' | 'occupation', 
 
 export const getFavoriteStatus = (type: 'major' | 'specialization' | 'occupation', id: number) =>
     api.get('/api/favorites/status', { params: { type, id } });
+

@@ -1,0 +1,8 @@
+[build]
+  command = "pnpm run build"
+  publish = ".next"
+  
+  environment = { NPM_FLAGS = "--no-audit" }
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"

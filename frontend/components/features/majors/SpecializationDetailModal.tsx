@@ -10,9 +10,8 @@ import {
     ArrowRight,
     CheckCircle2,
     Layers,
-    DollarSign,
-    TrendingUp,
-    Heart
+    Heart,
+    Globe
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -38,6 +37,7 @@ interface Occupation {
     tasks: string[] | string | null;
     tech_skills?: any[];
     onet_knowledge?: any[];
+    skills?: Skill[];
 }
 
 interface Specialization {
@@ -92,22 +92,20 @@ export const SpecializationDetailModal: React.FC<SpecializationDetailModalProps>
 
     if (!specialization) return null;
 
-    const avgSalary = specialization.occupations.length > 0
-        ? specialization.occupations.reduce((acc, occ) => acc + occ.median_salary, 0) / specialization.occupations.length
-        : 0;
-
-    const formatSalary = (salary: number) => {
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD',
-            maximumFractionDigits: 0,
-        }).format(salary);
-    };
 
     const handleCareerClick = (occupation: Occupation) => {
         setSelectedCareer(occupation);
         setIsCareerModalOpen(true);
     };
+
+    // Aggregate tech skills from all occupations
+    const aggregatedTechSkills = Array.from(
+        new Map(
+            specialization.occupations
+                .flatMap(occ => occ.tech_skills || [])
+                .map(skill => [skill.id, skill])
+        ).values()
+    ).slice(0, 12);
 
     return (
         <AnimatePresence>
@@ -199,11 +197,9 @@ export const SpecializationDetailModal: React.FC<SpecializationDetailModalProps>
                                                     className="group p-6 rounded-2xl bg-slate-50 border border-slate-100 hover:border-blue-200 hover:bg-white hover:shadow-md transition-all cursor-pointer flex flex-col justify-between"
                                                 >
                                                     <div>
-                                                        <h4 className="font-bold text-slate-900 mb-2 group-hover:text-blue-600 transition-colors">{occ.name}</h4>
-                                                        <p className="text-sm text-slate-500 line-clamp-2 mb-4">{occ.description}</p>
+                                                        <p className="text-sm text-slate-500 line-clamp-2">{occ.description}</p>
                                                     </div>
-                                                    <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-100">
-                                                        <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">{formatSalary(occ.median_salary)}/yr</span>
+                                                    <div className="flex items-center justify-end mt-2 pt-2 border-t border-slate-100">
                                                         <ArrowRight className="w-4 h-4 text-blue-500 transition-transform group-hover:translate-x-1" />
                                                     </div>
                                                 </div>
@@ -239,32 +235,39 @@ export const SpecializationDetailModal: React.FC<SpecializationDetailModalProps>
                                 <div className="space-y-8">
                                     <div className="bg-indigo-900 rounded-3xl p-8 text-white relative overflow-hidden">
                                         <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 bg-white/5 rounded-full blur-2xl" />
-
                                         <div className="space-y-6 relative z-10">
-                                            <div>
-                                                <div className="flex items-center gap-2 text-indigo-300 mb-2">
-                                                    <DollarSign className="w-4 h-4" />
-                                                    <span className="text-xs font-bold uppercase tracking-widest text-indigo-300">Avg. Field Salary</span>
-                                                </div>
-                                                <div className="text-4xl font-black tracking-tight">
-                                                    {formatSalary(avgSalary)}
-                                                    <span className="text-lg font-normal text-indigo-400 ml-1">/yr</span>
-                                                </div>
-                                            </div>
-
-                                            <div className="pt-6 border-t border-white/10">
-                                                <div className="flex items-center gap-2 text-indigo-300 mb-2">
-                                                    <TrendingUp className="w-4 h-4" />
-                                                    <span className="text-xs font-bold uppercase tracking-widest text-indigo-300">Demand Level</span>
-                                                </div>
-                                                <div className="text-xl font-bold text-blue-400">
-                                                    High Demand
-                                                </div>
+                                            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-indigo-100 text-[10px] font-bold uppercase tracking-wider w-fit">
+                                                <Globe className="w-3 h-3" />
+                                                Market Insight
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div className="p-8 rounded-3xl bg-slate-50 border border-slate-100">
+                                    {/* Aggregated Tech Skills */}
+                                    {aggregatedTechSkills.length > 0 && (
+                                        <section className="bg-slate-50 border border-slate-100 rounded-3xl p-8">
+                                            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest mb-6">Technology Proficiency</h3>
+                                            <div className="flex flex-wrap gap-2">
+                                                {aggregatedTechSkills.map((ts) => (
+                                                    <Badge
+                                                        key={ts.id}
+                                                        variant="secondary"
+                                                        className={cn(
+                                                            "px-3 py-1.5 text-xs font-bold rounded-lg border-none shadow-sm",
+                                                            ts.hot_tech
+                                                                ? "bg-indigo-600 text-white"
+                                                                : "bg-white text-slate-600"
+                                                        )}
+                                                    >
+                                                        {ts.skill_name}
+                                                        {ts.hot_tech && <Zap className="w-3 h-3 ml-1 fill-white" />}
+                                                    </Badge>
+                                                ))}
+                                            </div>
+                                        </section>
+                                    )}
+
+                                    <div className="p-8 rounded-3xl bg-slate-50 border border-slate-100 shadow-sm">
                                         <h4 className="text-sm font-bold text-slate-900 uppercase tracking-widest mb-4">Why choose this?</h4>
                                         <ul className="space-y-4">
                                             <li className="flex gap-3 text-sm text-slate-600 font-medium leading-relaxed">

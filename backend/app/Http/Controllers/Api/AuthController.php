@@ -20,12 +20,14 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        Auth::login($user);
+        // Create API token for cross-domain auth
+        $token = $user->createToken('auth-token')->plainTextToken;
 
         return response()->json([
             'message' => 'User registered successfully',
             'user' => $user,
-        ], 201)->withCookie(cookie('majorly_logged_in', 'true', 120, null, null, false, false));
+            'token' => $token,
+        ], 201);
     }
 
     public function login(LoginRequest $request)
@@ -38,21 +40,26 @@ class AuthController extends Controller
 
         $user = Auth::user();
 
+        // Delete old tokens and create a new one
+        $user->tokens()->delete();
+        $token = $user->createToken('auth-token')->plainTextToken;
+
         return response()->json([
             'message' => 'Login successful',
             'user' => $user,
-        ])->withCookie(cookie('majorly_logged_in', 'true', 120, null, null, false, false));
+            'token' => $token,
+        ]);
     }
 
     public function logout(Request $request)
     {
-        Auth::guard('web')->logout();
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        // Revoke all tokens for the current user
+        if ($request->user()) {
+            $request->user()->tokens()->delete();
+        }
 
         return response()->json([
             'message' => 'Logged out successfully'
-        ])->withCookie(cookie()->forget('majorly_logged_in'));
+        ]);
     }
 }

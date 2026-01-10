@@ -352,7 +352,7 @@ class ImportOpenData extends Command
             DB::table('major_occupation')->insertOrIgnore($chunk);
         }
         foreach (array_chunk($specOccPivots, 1000) as $chunk) {
-            DB::table('specialization_occupation')->insertOrIgnore($chunk);
+            DB::table('occupation_specialization')->insertOrIgnore($chunk);
         }
 
         // 4. Skills (Simplified Batching)
@@ -432,7 +432,7 @@ class ImportOpenData extends Command
             DB::table('major_skill')->insertOrIgnore($chunk);
         }
         foreach (array_chunk($specSkillPivots, 1000) as $chunk) {
-            DB::table('specialization_skill')->insertOrIgnore($chunk);
+            DB::table('skill_specialization')->insertOrIgnore($chunk);
         }
 
         // Tech Skills (Similar logic)

@@ -27,8 +27,8 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             OccupationSeeder::class,
-            MajorSeeder::class,
-            SpecializationSeeder::class,
+            // MajorSeeder::class,
+            // SpecializationSeeder::class,
         ]);
     }
 }

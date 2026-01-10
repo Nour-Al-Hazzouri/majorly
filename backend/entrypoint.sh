@@ -7,7 +7,7 @@ echo "Running migrations..."
 php artisan migrate --force
 
 echo "Running seeders..."
-php artisan db:seed --force
+php artisan db:seed --force || echo "Seeding failed, continuing..."
 
 echo "Starting Apache..."
 exec apache2-foreground

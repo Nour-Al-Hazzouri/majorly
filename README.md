@@ -67,6 +67,41 @@ At the same time, I wanted to push the boundaries of modern development. I wante
    php artisan serve
    ```
 
+### Initial Data Setup
+
+The platform relies on several external datasets for its "Truth" data (O*NET, CIP, and ESCO).
+
+#### 1. Automated Setup (O*NET & CIP)
+You can automatically download and extract the primary US-based datasets using:
+```bash
+php artisan majorly:download-open-data
+```
+This command will:
+- Download **O*NET 29.1 (Text Format)** to `storage/app/opendata/onet.zip`
+- Extract it to `storage/app/opendata/onet/db_29_1_text/`
+- Download the **CIP 2020 - SOC 2018 Crosswalk** to `storage/app/opendata/CIP2020_SOC2018_Crosswalk.csv`
+
+#### 2. Manual ESCO Setup
+Due to licensing and portal constraints, ESCO data must be downloaded manually:
+1. Visit the [ESCO Portal Download Page](https://ec.europa.eu/esco/portal/download).
+2. Download the **"ESCO dataset - v1.2.1 (classification - en - csv)"** package.
+3. Extract the contents into: `backend/storage/app/opendata/ESCO dataset - v1.2.1 - classification - en - csv/`
+   - Ensure the folder contains `skills_en.csv`, `occupations_en.csv`, and `occupationSkillRelations_en.csv`.
+
+#### 3. Running the Imports
+Once files are in place, run the following commands in order:
+
+```bash
+# 1. Primary O*NET and CIP Import (Hierarchy & Mapping)
+php artisan majorly:import-open-data
+
+# 2. ESCO Skills Integration (Technical & Professional Skills)
+php artisan majorly:import-esco-skills
+```
+
+> [!NOTE]
+> These imports are intensive and may take several minutes to complete as they process tens of thousands of records and calculate skill relevance weights.
+
 ### Frontend Setup
 1. Navigate to the `frontend` directory:
    ```bash

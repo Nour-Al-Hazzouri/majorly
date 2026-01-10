@@ -8,28 +8,8 @@ const protectedRoutes = ['/dashboard', '/assessment', '/profile', '/settings'];
 const authRoutes = ['/login', '/register', '/forgot-password', '/reset-password'];
 
 export default function (request: NextRequest) {
-    const { pathname } = request.nextUrl;
-
-    // Check for our custom authenticated cookie (reliable)
-    const isAuthenticated = request.cookies.has('majorly_logged_in');
-
-    // Debugging (Remove in production)
-    if (pathname.startsWith('/dashboard') || pathname.startsWith('/login')) {
-        console.log(`[Proxy] Path: ${pathname} | Authed: ${isAuthenticated}`);
-    }
-
-    // 1. Redirect unauthenticated users from protected routes to login
-    if (!isAuthenticated && protectedRoutes.some(route => pathname.startsWith(route))) {
-        const url = new URL('/login', request.url);
-        // Optional: Add a redirect parameter to return here after login
-        // url.searchParams.set('redirect', pathname);
-        return NextResponse.redirect(url);
-    }
-
-    // 2. Redirect authenticated users away from auth pages to dashboard
-    if (isAuthenticated && authRoutes.some(route => pathname.startsWith(route))) {
-        return NextResponse.redirect(new URL('/dashboard', request.url));
-    }
+    // Middleware authentication is disabled because we switched to client-side Token Auth (localStorage).
+    // The middleware cannot access localStorage, so we must handle route protection in the client components.
 
     return NextResponse.next();
 }

@@ -11,36 +11,32 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Fix Occupations
-        Schema::table('occupations', function (Blueprint $table) {
-            if (!Schema::hasColumn('occupations', 'soc_code')) {
+        // 1. Ensure columns exist
+        if (!Schema::hasColumn('occupations', 'soc_code')) {
+            Schema::table('occupations', function (Blueprint $table) {
                 $table->string('soc_code')->nullable()->after('code');
-            }
-        });
-
-        // Clear any old records that don't have a soc_code to prevent NOT NULL and UNIQUE violations
-        DB::table('occupations')->whereNull('soc_code')->delete();
-
-        Schema::table('occupations', function (Blueprint $table) {
-             // Explicitly mark as nullable() to avoid Laravel defaulting to NOT NULL on Postgres
-             $table->string('soc_code')->nullable()->unique()->change();
-        });
-
-        // Fix Skills
-        // Clear duplicates if any exist before adding unique constraint
-        $duplicates = DB::table('skills')
-            ->select('name')
-            ->groupBy('name')
-            ->havingRaw('COUNT(*) > 1')
-            ->pluck('name');
-        
-        if ($duplicates->isNotEmpty()) {
-            DB::table('skills')->whereIn('name', $duplicates)->delete();
+            });
         }
 
-        Schema::table('skills', function (Blueprint $table) {
-            $table->string('name')->nullable()->unique()->change();
-        });
+        // 2. Clear invalid data (DML)
+        DB::statement('DELETE FROM occupations WHERE soc_code IS NULL');
+        
+        // 3. Add unique constraints using raw SQL (survives pooler transaction logic better)
+        // Occupations
+        DB::statement('ALTER TABLE occupations DROP CONSTRAINT IF EXISTS occupations_soc_code_unique');
+        DB::statement('ALTER TABLE occupations ADD CONSTRAINT occupations_soc_code_unique UNIQUE (soc_code)');
+
+        // Skills
+        // Clear duplicates
+        DB::statement('DELETE FROM skills WHERE id IN (
+            SELECT id FROM (
+                SELECT id, ROW_NUMBER() OVER (PARTITION BY name ORDER BY id) as row_num
+                FROM skills
+            ) t WHERE t.row_num > 1
+        )');
+        
+        DB::statement('ALTER TABLE skills DROP CONSTRAINT IF EXISTS skills_name_unique');
+        DB::statement('ALTER TABLE skills ADD CONSTRAINT skills_name_unique UNIQUE (name)');
     }
 
     /**
@@ -48,11 +44,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('occupations', function (Blueprint $table) {
-            $table->dropUnique(['occupations_soc_code_unique']);
-        });
-        Schema::table('skills', function (Blueprint $table) {
-            $table->dropUnique(['skills_name_unique']);
-        });
+        DB::statement('ALTER TABLE occupations DROP CONSTRAINT IF EXISTS occupations_soc_code_unique');
+        DB::statement('ALTER TABLE skills DROP CONSTRAINT IF EXISTS skills_name_unique');
     }
 };

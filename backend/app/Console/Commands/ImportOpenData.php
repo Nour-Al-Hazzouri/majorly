@@ -74,11 +74,11 @@ class ImportOpenData extends Command
             ];
 
             if (count($insertData) >= 500) {
-                DB::table('onet_occupations')->insert($insertData);
+                DB::table('onet_occupations')->insertOrIgnore($insertData);
                 $insertData = [];
             }
         }
-        if (!empty($insertData)) DB::table('onet_occupations')->insert($insertData);
+        if (!empty($insertData)) DB::table('onet_occupations')->insertOrIgnore($insertData);
     }
 
     private function importOnetSkills($path)
@@ -118,7 +118,7 @@ class ImportOpenData extends Command
             // Chunk insert
             $chunks = array_chunk(array_values($uniqueElements), 500);
             foreach ($chunks as $chunk) {
-                DB::table('onet_knowledge')->insert($chunk);
+                DB::table('onet_knowledge')->insertOrIgnore($chunk);
             }
         }
     }
@@ -153,11 +153,11 @@ class ImportOpenData extends Command
                 ];
 
                 if (count($insertData) >= 1000) {
-                    DB::table('onet_occupation_knowledge')->insert($insertData);
+                    DB::table('onet_occupation_knowledge')->insertOrIgnore($insertData);
                     $insertData = [];
                 }
             }
-            if (!empty($insertData)) DB::table('onet_occupation_knowledge')->insert($insertData);
+            if (!empty($insertData)) DB::table('onet_occupation_knowledge')->insertOrIgnore($insertData);
         }
     }
 
@@ -183,11 +183,11 @@ class ImportOpenData extends Command
             ];
 
             if (count($insertData) >= 1000) {
-                DB::table('onet_occupation_tech_skills')->insert($insertData);
+                DB::table('onet_occupation_tech_skills')->insertOrIgnore($insertData);
                 $insertData = [];
             }
         }
-        if (!empty($insertData)) DB::table('onet_occupation_tech_skills')->insert($insertData);
+        if (!empty($insertData)) DB::table('onet_occupation_tech_skills')->insertOrIgnore($insertData);
     }
 
     private function importCrosswalk($path)
@@ -221,11 +221,11 @@ class ImportOpenData extends Command
             ];
             
             if (count($insertData) >= 500) {
-                DB::table('cip_soc_crosswalk')->insert($insertData);
+                DB::table('cip_soc_crosswalk')->insertOrIgnore($insertData);
                 $insertData = [];
             }
         }
-        if (!empty($insertData)) DB::table('cip_soc_crosswalk')->insert($insertData);
+        if (!empty($insertData)) DB::table('cip_soc_crosswalk')->insertOrIgnore($insertData);
     }
     
     private function transformToAppData($onetPath = null)

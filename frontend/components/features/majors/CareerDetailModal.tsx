@@ -277,14 +277,15 @@ export const CareerDetailModal: React.FC<CareerDetailModalProps> = ({ isOpen, on
 
                                 {/* Right Column: Stats & Meta */}
                                 <div className="space-y-8">
-                                    {/* Quick Stats Card */}
+                                    {/* Sidebar Meta */}
                                     <div className="bg-slate-900 rounded-3xl p-8 text-white relative overflow-hidden">
                                         <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 bg-white/5 rounded-full blur-2xl" />
 
                                         <div className="space-y-6 relative z-10">
-                                            <p className="text-slate-400 text-xs font-medium italic">
-                                                Detailed career analytics and market trends are powered by modern academic insights.
-                                            </p>
+                                            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-blue-100 text-[10px] font-bold uppercase tracking-wider w-fit">
+                                                <Globe className="w-3 h-3" />
+                                                Market Insight
+                                            </div>
                                         </div>
                                     </div>
 

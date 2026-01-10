@@ -84,43 +84,22 @@ class ImportEscoSkills extends Command
                 $onetOccMap[$normName] = $occ->id;
             }
 
-            // 4. Map ESCO URI -> O*NET ID
+            // 4. Map ESCO URI -> O*NET ID (Name matching only for high precision)
             $this->info("Mapping ESCO URIs to O*NET IDs...");
             $uriToOnetId = [];
             $matchesByName = 0;
-            $matchesByIsco = 0;
-            
-            // First 4 digits of SOC often align with ISCO (simplified crosswalk)
-            $onetIscoMap = [];
-            foreach (Occupation::all() as $occ) {
-                $soc4 = str_replace('-', '', substr($occ->soc_code, 0, 5)); // e.g. 11-10 -> 1110
-                $onetIscoMap[$soc4][] = $occ->id;
-            }
 
             foreach ($escoOccMap as $uri => $names) {
-                $matched = false;
-                // Try Name Match First (Higher Accuracy)
+                // Only use name matching for accuracy
                 foreach ($names as $name) {
                     if (isset($onetOccMap[$name])) {
                         $uriToOnetId[$uri] = $onetOccMap[$name];
                         $matchesByName++;
-                        $matched = true;
                         break;
                     }
                 }
-
-                // Fallback to ISCO Code Prefix (if ESCO has ISCO group)
-                if (!$matched && isset($escoIscoMap[$uri])) {
-                    $isco = $escoIscoMap[$uri];
-                    if (isset($onetIscoMap[$isco])) {
-                        // If there are multiple O*NET matches for one ISCO, we pick the first or link ALL?
-                        // For skills, linking to the first representative is safer to avoid pollution.
-                        $uriToOnetId[$uri] = $onetIscoMap[$isco][0];
-                        $matchesByIsco++;
-                    }
-                }
             }
-            $this->info("Matched $matchesByName by name and $matchesByIsco by ISCO prefix.");
+            $this->info("Matched $matchesByName occupations by exact name matching (high precision mode).");
 
             // 5. Load Skills (URI -> Details)
             $this->info("Parsing ESCO Skills...");

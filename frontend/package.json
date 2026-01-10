@@ -25,6 +25,7 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "framer-motion": "^12.24.10",
+    "js-cookie": "^3.0.5",
     "lodash": "^4.17.21",
     "lucide-react": "^0.562.0",
     "motion": "^12.24.10",
@@ -39,6 +40,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/js-cookie": "^3.0.6",
     "@types/lodash": "^4.17.21",
     "@types/node": "^20",
     "@types/react": "^19",

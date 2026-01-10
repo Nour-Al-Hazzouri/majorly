@@ -156,19 +156,19 @@ export default function AboutPage() {
                         </a>
 
                         <a
-                            href="https://lightcast.io/open-skills"
+                            href="https://ec.europa.eu/esco/portal/home"
                             target="_blank"
                             rel="noreferrer"
                             className="group bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl p-8 transition-all hover:scale-[1.02]"
                         >
                             <div className="flex items-center justify-center gap-3 mb-4">
-                                <Target className="w-6 h-6 text-purple-400 group-hover:text-purple-300" />
-                                <h3 className="text-xl font-bold group-hover:text-purple-300 transition-colors">Lightcast Open Skills</h3>
+                                <Target className="w-6 h-6 text-emerald-400 group-hover:text-emerald-300" />
+                                <h3 className="text-xl font-bold group-hover:text-emerald-300 transition-colors">ESCO Portal</h3>
                             </div>
                             <p className="text-slate-400 leading-relaxed mb-6">
-                                The world's leading open library of skills, providing a common language for the labor market.
+                                European Skills, Competences, Qualifications and Occupations taxonomy, providing a common language for the labor market.
                             </p>
-                            <span className="text-sm font-semibold text-purple-400 flex items-center justify-center gap-2 group-hover:gap-3 transition-all">
+                            <span className="text-sm font-semibold text-emerald-400 flex items-center justify-center gap-2 group-hover:gap-3 transition-all">
                                 Visit Website <ArrowRight className="w-4 h-4" />
                             </span>
                         </a>

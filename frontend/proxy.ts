@@ -1,15 +1,30 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-// Routes that require authentication
-const protectedRoutes = ['/dashboard', '/assessment', '/profile', '/settings'];
-
-// Routes that should be inaccessible to logged-in users
 const authRoutes = ['/login', '/register', '/forgot-password', '/reset-password'];
+const publicMarketingRoutes = ['/', '/about'];
 
-export default function (request: NextRequest) {
-    // Middleware authentication is disabled because we switched to client-side Token Auth (localStorage).
-    // The middleware cannot access localStorage, so we must handle route protection in the client components.
+// Next.js 16 Proxy: Traffic routing and optimistic navigation guards
+export default function proxy(request: NextRequest) {
+    const { nextUrl, cookies } = request;
+    const isAuthenticated = cookies.get('is_authenticated')?.value === 'true';
+    const path = nextUrl.pathname;
+
+    // 1. Authorized Users: Redirect from public/auth routes to dashboard
+    if (isAuthenticated) {
+        if (publicMarketingRoutes.includes(path) || authRoutes.includes(path)) {
+            return NextResponse.redirect(new URL('/dashboard', request.url));
+        }
+    }
+
+    // 2. Unauthorized Users: Redirect from protected routes to landing page
+    if (!isAuthenticated) {
+        const isAllowedPath = publicMarketingRoutes.includes(path) || authRoutes.includes(path);
+
+        if (!isAllowedPath) {
+            return NextResponse.redirect(new URL('/', request.url));
+        }
+    }
 
     return NextResponse.next();
 }

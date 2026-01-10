@@ -88,6 +88,14 @@ export default function Home() {
                   <ArrowRight className="ml-2 w-5 h-5 text-white" />
                 </Link>
               </Button>
+              <Button
+                asChild
+                variant="outline"
+                size="lg"
+                className="rounded-full border-2 text-lg px-8 py-7 hover:bg-slate-50 transition-all"
+              >
+                <Link href="/about">Learn More</Link>
+              </Button>
             </div>
           </motion.div>
 

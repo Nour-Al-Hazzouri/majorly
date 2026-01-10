@@ -25,12 +25,15 @@ class DatabaseSeeder extends Seeder
             'password' => bcrypt('password'),
         ]);
 
-        // Run the robust data import pipeline
-        // This replaces individual seeders with a comprehensive O*NET + CIP import
-        $this->command->info('Downloading Open Data...');
-        \Illuminate\Support\Facades\Artisan::call('majorly:download-open-data', [], $this->command->getOutput());
+        // NOTE: The heavy O*NET data import is too large for Render's boot process.
+        // run these commands MANUALLY in the Render Shell after deployment:
+        // php artisan majorly:download-open-data 
+        // php artisan majorly:import-open-data
         
-        $this->command->info('Importing Open Data (this may take a while)...');
-        \Illuminate\Support\Facades\Artisan::call('majorly:import-open-data', [], $this->command->getOutput());
+        // $this->command->info('Downloading Open Data...');
+        // \Illuminate\Support\Facades\Artisan::call('majorly:download-open-data', [], $this->command->getOutput());
+        
+        // $this->command->info('Importing Open Data (this may take a while)...');
+        // \Illuminate\Support\Facades\Artisan::call('majorly:import-open-data', [], $this->command->getOutput());
     }
 }

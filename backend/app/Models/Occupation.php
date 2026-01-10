@@ -36,6 +36,11 @@ class Occupation extends Model
     }
 
 
+    public function skills()
+    {
+        return $this->belongsToMany(Skill::class, 'occupation_skill');
+    }
+
     public function onetSkills()
     {
         return $this->hasMany(OccupationOnetSkill::class);

@@ -7,6 +7,7 @@ import api from "@/lib/api";
 import { AssessmentHistory } from "@/components/features/dashboard/AssessmentHistory";
 import { SavedItems } from "@/components/features/dashboard/SavedItems";
 import { Skeleton } from "@/components/ui/skeleton";
+import { LoadingState } from "@/components/ui/loading-state";
 import { ProfileForm } from "@/components/features/dashboard/ProfileForm";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { User, History, Heart, Settings, LayoutDashboard, BookOpen, Layers, Briefcase } from "lucide-react";
@@ -55,11 +56,8 @@ function ProfileContent() {
         return (
             <div className="min-h-screen bg-[#F8FAFC]">
                 <Sidebar />
-                <main className="md:ml-64 p-8">
-                    <div className="max-w-4xl mx-auto space-y-8">
-                        <Skeleton className="h-12 w-48" />
-                        <Skeleton className="h-[400px] w-full rounded-2xl" />
-                    </div>
+                <main className="md:ml-64 p-8 flex items-center justify-center">
+                    <LoadingState />
                 </main>
             </div>
         );
@@ -173,11 +171,8 @@ export default function ProfilePage() {
         <Suspense fallback={
             <div className="min-h-screen bg-[#F8FAFC]">
                 <Sidebar />
-                <main className="md:ml-64 p-8">
-                    <div className="max-w-4xl mx-auto space-y-8">
-                        <Skeleton className="h-12 w-48" />
-                        <Skeleton className="h-[400px] w-full rounded-2xl" />
-                    </div>
+                <main className="md:ml-64 p-8 flex items-center justify-center">
+                    <LoadingState />
                 </main>
             </div>
         }>

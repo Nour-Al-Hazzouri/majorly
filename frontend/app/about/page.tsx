@@ -173,10 +173,17 @@ export default function AboutPage() {
                             </span>
                         </a>
                     </div>
-                    <p className="mt-12 text-sm text-slate-500 max-w-2xl mx-auto">
-                        All career data, salary information, and skill taxonomies are sourced from these open standards to ensure matching relevance.
-                        <strong> Note:</strong> Majorly is not affiliated with O*NET, ESCO, or any government agency. This project only uses their publicly accessible data to provide educational insights.
-                    </p>
+                    <div className="mt-12 text-sm text-slate-500 max-w-3xl mx-auto space-y-4">
+                        <p>
+                            This project includes information from the O*NET 29.1 Database by the U.S. Department of Labor, Employment and Training Administration (USDOL/ETA). Used under the <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer" className="underline hover:text-slate-400">CC BY 4.0</a> license. O*NET® is a trademark of USDOL/ETA. Majorly has modified all or some of this information. USDOL/ETA has not approved, endorsed, or tested these modifications.
+                        </p>
+                        <p>
+                            This project uses the ESCO classification of the European Commission.
+                        </p>
+                        <p>
+                            <strong className="text-slate-400">Note:</strong> Majorly is not affiliated with O*NET, ESCO, or any government agency. This project only uses their publicly accessible data to provide educational insights.
+                        </p>
+                    </div>
                 </div>
             </section>
 

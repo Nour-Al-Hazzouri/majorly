@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import api from "@/lib/api";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { LoadingState } from "@/components/ui/loading-state";
 import ResultsStep from "@/components/features/assessment/ResultsStep";
 import SpecializationResultsStep from "@/components/features/assessment/SpecializationResultsStep";
 import { toast } from "sonner";
@@ -42,17 +43,8 @@ export default function AssessmentResultsPage() {
         return (
             <div className="min-h-screen bg-[#F8FAFC]">
                 <Sidebar />
-                <main className="md:ml-64 p-8">
-                    <div className="max-w-4xl mx-auto space-y-8 text-center pt-20">
-                        <Skeleton className="h-12 w-12 rounded-full mx-auto" />
-                        <Skeleton className="h-10 w-64 mx-auto" />
-                        <Skeleton className="h-4 w-96 mx-auto" />
-                        <div className="space-y-4 pt-10">
-                            {[1, 2, 3].map(i => (
-                                <Skeleton key={i} className="h-24 w-full rounded-2xl" />
-                            ))}
-                        </div>
-                    </div>
+                <main className="md:ml-64 p-8 flex items-center justify-center">
+                    <LoadingState />
                 </main>
             </div>
         );

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from "@/components/providers/AuthProvider";
+import { LoadingState } from "@/components/ui/loading-state";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { BookOpen, Sparkles, Calendar, ArrowRight, Target } from "lucide-react";
 import { motion } from "motion/react";
@@ -47,7 +48,7 @@ export default function DashboardPage() {
             <div className="min-h-screen bg-[#F8FAFC]">
                 <Sidebar />
                 <main className="md:ml-64 p-8 flex items-center justify-center h-screen">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                    <LoadingState className="h-full" />
                 </main>
             </div>
         );
